@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.py[cod]
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.db-journal
+campuscart.db
+campuscart.db-shm
+campuscart.db-wal
+campuscart.db-journal

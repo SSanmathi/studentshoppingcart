@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Stationery image unavailable</title><desc id="desc">Illustration of a pencil, notebook, and ruler used as a stationery category fallback.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M270 150h260v340H270z" fill="#fff" stroke="#94a3b8" stroke-width="9"/>
+<path d="M320 220h160m-160 55h160m-160 55h130m-130 55h160" stroke="#cbd5e1" stroke-width="10" stroke-linecap="round"/>
+<path d="M190 435l185-270 43 30-185 270-62 24z" fill="#fbbf24" stroke="#92400e" stroke-width="7"/>
+<path d="M510 190h48v275h-48z" fill="#14b8a6" stroke="#0f766e" stroke-width="7"/>
+<path d="M518 230h18m-18 30h12m-12 30h18m-18 30h12m-12 30h18m-18 30h12" stroke="#fff" stroke-width="5"/>
+<text x="400" y="545" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#475569">STATIONERY IMAGE UNAVAILABLE</text>
+</svg>

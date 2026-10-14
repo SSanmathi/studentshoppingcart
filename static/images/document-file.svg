@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Document files</title><desc id="desc">Illustration of a transparent document sleeve holding papers.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M285 105h220l80 82v305H285z" fill="#fff" stroke="#94a3b8" stroke-width="8"/><path d="M505 105v90h80" fill="#e2e8f0" stroke="#94a3b8" stroke-width="8"/><path d="M335 245h200m-200 48h200m-200 48h160m-160 48h185" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round"/><path d="M245 150h260v345H245z" fill="#14b8a6" fill-opacity=".16" stroke="#0f766e" stroke-width="8"/><path d="M245 170h260" stroke="#0f766e" stroke-width="12"/>
+</svg>

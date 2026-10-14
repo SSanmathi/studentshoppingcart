@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Sketch pens</title><desc id="desc">Illustration of coloured felt-tip sketch pens for drawing and colouring.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(-18 400 300)"><rect x="250" y="200" width="58" height="280" rx="18" fill="#ef4444"/><path d="M250 200l29-55 29 55z" fill="#b91c1c"/><rect x="330" y="180" width="58" height="300" rx="18" fill="#facc15"/><path d="M330 180l29-55 29 55z" fill="#ca8a04"/><rect x="410" y="205" width="58" height="275" rx="18" fill="#3b82f6"/><path d="M410 205l29-55 29 55z" fill="#1d4ed8"/><rect x="490" y="175" width="58" height="305" rx="18" fill="#22c55e"/><path d="M490 175l29-55 29 55z" fill="#15803d"/></g>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Book image unavailable</title><desc id="desc">Illustration of a stack of closed books used as a books category fallback.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M205 390h390v100H205z" fill="#2563eb" stroke="#1e3a8a" stroke-width="8"/>
+<path d="M235 280h355v100H235z" fill="#14b8a6" stroke="#0f766e" stroke-width="8"/>
+<path d="M260 170h320v100H260z" fill="#fbbf24" stroke="#b45309" stroke-width="8"/>
+<path d="M300 195h230m-205 110h220m-235 110h245" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+<text x="400" y="545" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#475569">BOOK IMAGE UNAVAILABLE</text>
+</svg>

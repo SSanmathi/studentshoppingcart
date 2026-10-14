@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | Student Cart{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-header">
+            <span class="eyebrow">Student Cart account</span>
+            <h2>Sign in to continue</h2>
+            <p>Use your registered email and password. Your school information stays saved in your profile.</p>
+        </div>
+        <form method="POST" class="auth-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="input-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required autocomplete="email" placeholder="student@college.edu">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+            </div>
+            <button type="submit" class="primary-btn block-btn">Sign in</button>
+        </form>
+        <p class="auth-switch">New to Student Cart? <a href="{{ url_for('register') }}">Create an account</a></p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Mechanical pencil</title><desc id="desc">Illustration of a refillable mechanical pencil with a clip and lead tip.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(-30 400 300)"><rect x="365" y="105" width="70" height="375" rx="28" fill="#475569"/><rect x="378" y="130" width="44" height="245" rx="18" fill="#94a3b8"/><path d="M365 440h70l-35 75z" fill="#cbd5e1"/><path d="M400 515v37" stroke="#334155" stroke-width="7"/><path d="M414 110q53 5 22 90" fill="none" stroke="#0f172a" stroke-width="9"/><rect x="380" y="92" width="40" height="35" rx="12" fill="#14b8a6"/></g>
+</svg>

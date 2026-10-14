@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Products | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Shop essentials</span>
+        <h1>Browse student products</h1>
+    </div>
+    <div class="result-count" id="product-result-count">{{ products|length }} products</div>
+</section>
+
+<section class="filter-panel">
+    <form method="GET" action="{{ url_for('products') }}" class="filter-form">
+        <div class="search-box inline-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="product-search-input" class="global-search-input" type="text" name="q" value="{{ search_query }}" placeholder="Search products, countries, or uses" autocomplete="off">
+            <button id="clear-product-search" type="button" aria-label="Clear search" title="Clear search">×</button>
+            <div class="search-suggestions" id="product-search-suggestions" role="listbox"></div>
+        </div>
+        <select name="category">
+            <option value="all" {% if active_category == 'all' %}selected{% endif %}>All categories</option>
+            <option value="international" {% if active_category == 'international' %}selected{% endif %}>International stationery</option>
+            <option value="hostel" {% if active_category == 'hostel' %}selected{% endif %}>Hostel essentials</option>
+            <option value="snacks" {% if active_category == 'snacks' %}selected{% endif %}>Snacks</option>
+            {% for category in categories %}
+                <option value="{{ category.category }}" {% if active_category == category.category %}selected{% endif %}>{{ category.category }}</option>
+            {% endfor %}
+        </select>
+        <select name="sort">
+            <option value="featured" {% if sort == 'featured' %}selected{% endif %}>Featured</option>
+            <option value="low_high" {% if sort == 'low_high' %}selected{% endif %}>Price: Low to High</option>
+            <option value="high_low" {% if sort == 'high_low' %}selected{% endif %}>Price: High to Low</option>
+            <option value="name" {% if sort == 'name' %}selected{% endif %}>Name: A to Z</option>
+            <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Popular</option>
+        </select>
+        <input class="price-filter" type="number" name="min_price" min="0" step="1" value="{{ min_price }}" placeholder="Min ₹">
+        <input class="price-filter" type="number" name="max_price" min="0" step="1" value="{{ max_price }}" placeholder="Max ₹">
+        <label class="stock-filter"><input type="checkbox" name="stock" value="available" {% if in_stock %}checked{% endif %}> In stock</label>
+        <button type="submit" class="primary-btn">Search</button>
+        {% if active_category != 'all' or sort != 'featured' or min_price or max_price or in_stock %}
+            <a href="{{ url_for('products', q=search_query) }}" class="secondary-btn small-btn">Reset filters</a>
+        {% endif %}
+    </form>
+</section>
+
+<section class="product-grid listing-grid" id="product-grid">
+    {% for product in products %}
+        {% include 'partials/product_card.html' %}
+    {% endfor %}
+</section>
+
+{% if not products %}
+    <div class="empty-state" id="no-products-found">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <h3>No products found</h3>
+        <p>Try another product name, category, country style, or keyword, or clear your filters.</p>
+        <a href="{{ url_for('products') }}" class="primary-btn">Show all products</a>
+    </div>
+{% else %}
+    <div class="empty-state hidden" id="no-products-found" style="display: none;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <h3>No products found</h3>
+        <p>Try another product name, category, or keyword to explore more stationery essentials.</p>
+        <a href="{{ url_for('products') }}" class="primary-btn">Show all products</a>
+    </div>
+{% endif %}
+{% endblock %}

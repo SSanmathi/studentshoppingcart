@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Budget Challenge | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">A useful basket, within your limit</span>
+        <h1>Student Budget Challenge</h1>
+        <p>Choose a purpose and budget. Recommendations use only currently stocked catalogue items; change the selection to fit your needs.</p>
+    </div>
+</section>
+
+<form method="GET" class="panel kit-controls">
+    <div class="input-row">
+        <div class="input-group">
+            <label for="challenge-purpose">Shopping purpose</label>
+            <select id="challenge-purpose" name="purpose">
+                <option value="exam" {% if purpose == 'exam' %}selected{% endif %}>Exam preparation</option>
+                <option value="everyday" {% if purpose == 'everyday' %}selected{% endif %}>Everyday stationery</option>
+                <option value="hostel" {% if purpose == 'hostel' %}selected{% endif %}>Hostel shopping</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="challenge-budget">Budget (₹)</label>
+            <input id="challenge-budget" type="number" name="budget" min="0.01" max="10000000" step="0.01" value="{{ '%.2f'|format(budget) }}" required>
+        </div>
+    </div>
+    <button type="submit" class="secondary-btn">Build recommendations</button>
+</form>
+
+<form method="POST" id="challenge-form" class="kit-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="purpose" value="{{ purpose }}">
+    <input type="hidden" name="budget" value="{{ budget }}">
+    <section class="panel kit-controls">
+        <div class="kit-total-row">
+            <span>Selected total: <strong id="challenge-total">₹0.00</strong></span>
+            <span>Remaining: <strong id="challenge-remaining">₹{{ '%.2f'|format(budget) }}</strong></span>
+            <span class="budget-warning" id="challenge-warning" hidden>Selection exceeds your challenge budget.</span>
+        </div>
+    </section>
+    {% if products %}
+        <section class="product-grid catalog-grid">
+            {% for product in products %}
+            <article class="product-card challenge-product" data-price="{{ product.effective_price }}" data-group="{{ product.subcategory or product.category }}">
+                <label class="kit-select">
+                    <input type="checkbox" name="product_ids" value="{{ product.id }}" data-price="{{ product.effective_price }}" {% if product.id in recommended_ids %}checked{% endif %}>
+                    <span>{% if product.id in recommended_ids %}Recommended{% else %}Select{% endif %}</span>
+                </label>
+                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
+                    <img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(product.category) }}';this.alt=this.alt+' (category illustration)';">
+                </a>
+                <div class="product-content">
+                    <span class="product-category">{{ product.category }}</span>
+                    <h3>{{ product.name }}</h3>
+                    <div class="price-line"><strong>₹{{ '%.2f'|format(product.effective_price) }}</strong></div>
+                    <small>{{ product.stock }} available</small>
+                    <small class="product-reason">{{ product.recommendation_reason }}</small>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+        <div class="kit-submit-row">
+            <button type="submit" class="primary-btn">Add challenge basket to cart</button>
+            <a href="{{ url_for('cart') }}" class="secondary-btn">Review cart</a>
+        </div>
+    {% else %}
+        <section class="empty-state"><h2>No matching in-stock products</h2><p>Try a different purpose or budget.</p></section>
+    {% endif %}
+</form>
+{% endblock %}

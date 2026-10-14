@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Wishlist | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div><span class="eyebrow">Saved for later</span><h1>Your wishlist</h1></div>
+    <a href="{{ url_for('products') }}" class="secondary-btn">Continue browsing</a>
+</section>
+
+{% if products %}
+    <section class="product-grid catalog-grid">
+        {% for product in products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </section>
+{% else %}
+    <section class="empty-state padded">
+        <i class="fa-regular fa-heart"></i>
+        <h2>Your wishlist is empty</h2>
+        <p>Save stationery and hostel essentials here to compare them later.</p>
+        <a href="{{ url_for('products') }}" class="primary-btn">Explore products</a>
+    </section>
+{% endif %}
+{% endblock %}

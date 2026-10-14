@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Budget Planner | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Smart budget planner</span>
+        <h1>Monthly shopping budget</h1>
+    </div>
+</section>
+
+<section class="budget-layout">
+    <div class="panel budget-hero">
+        <div class="budget-summary">
+            <div>
+                <small>Shopping budget</small>
+                <strong>₹{{ '%.2f'|format(budget.budget) }}</strong>
+            </div>
+            <div>
+                <small>Current cart total</small>
+                <strong>₹{{ '%.2f'|format(budget.cart_total) }}</strong>
+            </div>
+            <div>
+                <small>Remaining</small>
+                <strong>₹{{ '%.2f'|format(budget.remaining) }}</strong>
+            </div>
+        </div>
+        <div class="budget-progress large">
+            <div class="progress-bar">
+                <span style="width: {{ budget.percent }}%"></span>
+            </div>
+            <small>{{ '%.2f'|format(budget.percent) }}% of budget in cart</small>
+        </div>
+        {% if budget.remaining < 0 %}<p class="budget-warning">Your current cart exceeds this budget by ₹{{ '%.2f'|format(-budget.remaining) }}.</p>{% endif %}
+    </div>
+
+    <div class="panel budget-form-panel">
+        <h2>Update budget</h2>
+        <form method="POST" class="simple-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="input-group">
+                <label for="monthly_budget">Set your shopping budget (₹)</label>
+                <input type="number" step="0.01" id="monthly_budget" name="monthly_budget" value="{{ budget.budget }}" min="0.01" max="10000000" required>
+            </div>
+            <button type="submit" class="primary-btn">Save budget</button>
+        </form>
+        <form method="POST" class="reset-budget-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="reset">
+            <button type="submit" class="link-btn">Reset to ₹2,000</button>
+        </form>
+    </div>
+</section>
+
+<section class="panel budget-shortcuts">
+    <div class="panel-header"><h2>Find affordable alternatives</h2><a href="{{ url_for('products', max_price=budget.budget, sort='low_high') }}" class="text-link">Browse items within ₹{{ '%.0f'|format(budget.budget) }}</a></div>
+    <p class="empty-copy">Current cart balance is calculated as shopping budget minus cart total. Completed orders are shown separately below.</p>
+</section>
+
+<section class="panel">
+    <div class="panel-header">
+        <h2>Past purchase breakdown</h2>
+    </div>
+    {% if budget.category_breakdown %}
+    <div class="category-breakdown">
+        {% for item in budget.category_breakdown %}
+        <div class="breakdown-item">
+            <div class="breakdown-label">
+                <span>{{ item.category }}</span>
+                <strong>₹{{ '%.2f'|format(item.amount) }}</strong>
+            </div>
+            <div class="progress-bar small">
+                <span style="width: {{ (item.amount / budget.spent * 100) if budget.spent else 0 }}%"></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-copy">No completed purchases yet. Your active cart is tracked separately above.</p>
+    {% endif %}
+</section>
+{% endblock %}

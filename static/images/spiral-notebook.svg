@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Spiral notebook</title><desc id="desc">Illustration of a spiral-bound notebook with a bright cover and ruled pages.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="260" y="105" width="330" height="400" rx="20" fill="#f59e0b"/><rect x="285" y="128" width="280" height="355" rx="10" fill="#fff"/><path d="M325 205h195m-195 48h195m-195 48h195m-195 48h195m-195 48h195m-195 48h195" stroke="#93c5fd" stroke-width="5"/><path d="M265 145q-25 0-25 17t25 17m0 32q-25 0-25 17t25 17m0 32q-25 0-25 17t25 17m0 32q-25 0-25 17t25 17m0 32q-25 0-25 17t25 17m0 32q-25 0-25 17t25 17" fill="none" stroke="#475569" stroke-width="8"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Sticky notes</title><desc id="desc">Illustration of a stack of colourful square sticky notes.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M250 205h270v210H250z" fill="#fda4af"/><path d="M280 175h270v210H280z" fill="#fde047"/><path d="M310 145h270v210H310z" fill="#a7f3d0"/><path d="M310 145h270v210H310z" fill-opacity=".95"/><path d="M350 215h185m-185 38h160m-160 38h130" stroke="#0f766e" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+</svg>

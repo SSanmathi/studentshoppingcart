@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">A4 paper pack</title><desc id="desc">Illustration of a ream of white A4 printer and assignment paper.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M260 170h260l65 65v225H260z" fill="#cbd5e1"/><path d="M240 150h260l65 65v225H240z" fill="#fff" stroke="#94a3b8" stroke-width="7"/><path d="M500 150v68h65" fill="#e2e8f0" stroke="#94a3b8" stroke-width="7"/><rect x="275" y="290" width="250" height="86" rx="12" fill="#dbeafe"/><text x="400" y="346" text-anchor="middle" font-family="Arial,sans-serif" font-size="32" font-weight="700" fill="#1d4ed8">A4 PAPER</text>
+</svg>

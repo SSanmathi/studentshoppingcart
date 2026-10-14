@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Long ruled notebook</title><desc id="desc">Illustration of a tall, long-format ruled notebook for class notes.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="320" y="70" width="230" height="465" rx="22" fill="#2563eb"/><rect x="338" y="88" width="194" height="429" rx="10" fill="#fff"/><path d="M370 150h128m-128 46h128m-128 46h128m-128 46h128m-128 46h128m-128 46h128m-128 46h128" stroke="#93c5fd" stroke-width="5"/><path d="M357 88v429" stroke="#fb7185" stroke-width="5"/>
+</svg>

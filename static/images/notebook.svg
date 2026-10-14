@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Ruled notebook</title><desc id="desc">Illustration of a ruled A4 notebook with a teal cover and lined pages.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="265" y="108" width="310" height="400" rx="24" fill="#0f766e"/><rect x="285" y="128" width="270" height="360" rx="12" fill="#fff"/><path d="M330 205h185m-185 48h185m-185 48h185m-185 48h185m-185 48h185m-185 48h185" stroke="#93c5fd" stroke-width="5"/><path d="M315 128v360" stroke="#fb7185" stroke-width="5"/><circle cx="520" cy="155" r="9" fill="#14b8a6"/>
+</svg>

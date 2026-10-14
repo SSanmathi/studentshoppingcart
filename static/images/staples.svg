@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Staples box</title><desc id="desc">Illustration of a small box of metal staples with several loose staples.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M260 220l145-75 145 75v190l-145 75-145-75z" fill="#2563eb"/><path d="M260 220l145 75 145-75" fill="none" stroke="#bfdbfe" stroke-width="8"/><path d="M405 295v190" stroke="#1d4ed8" stroke-width="8"/><text x="405" y="365" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="700" fill="#fff">STAPLES</text><path d="M555 410h80v34h-80zm16 50h80v34h-80zm-45 38h80v34h-80z" fill="#94a3b8" stroke="#475569" stroke-width="5"/>
+</svg>

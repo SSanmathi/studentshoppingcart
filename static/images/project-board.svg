@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Academic project board</title><desc id="desc">Illustration of a presentation board with a heading, notes, and a simple diagram.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="195" y="125" width="410" height="350" rx="18" fill="#fff" stroke="#64748b" stroke-width="10"/>
+<rect x="230" y="160" width="340" height="58" rx="10" fill="#dbeafe"/>
+<path d="M265 270h108v115H265z" fill="#ccfbf1" stroke="#0f766e" stroke-width="6"/>
+<path d="M422 270h110m-110 35h85m-85 35h100" stroke="#94a3b8" stroke-width="9" stroke-linecap="round"/>
+<path d="M319 405v40m160-40v40m-160 0h160" stroke="#475569" stroke-width="9" stroke-linecap="round"/>
+<circle cx="320" cy="325" r="23" fill="#fbbf24"/>
+<path d="M345 325h54" stroke="#2563eb" stroke-width="8"/>
+</svg>

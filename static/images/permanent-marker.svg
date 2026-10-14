@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Permanent markers</title><desc id="desc">Illustration of thick permanent markers with capped writing tips.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(28 400 300)"><rect x="300" y="150" width="82" height="315" rx="20" fill="#1e293b"/><rect x="300" y="150" width="82" height="88" rx="18" fill="#ef4444"/><path d="M300 425h82l-41 64z" fill="#334155"/><rect x="410" y="150" width="82" height="315" rx="20" fill="#2563eb"/><rect x="410" y="150" width="82" height="88" rx="18" fill="#facc15"/><path d="M410 425h82l-41 64z" fill="#1e3a8a"/></g>
+</svg>

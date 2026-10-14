@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Your order history</span>
+        <h1>My Orders</h1>
+    </div>
+</section>
+
+{% if orders %}
+<section class="orders-list">
+    {% for order in orders %}
+    <div class="panel order-card">
+        <div class="panel-header">
+            <h3>{{ order.order_id }}</h3>
+            <span class="status-badge">{{ order.order_status }}</span>
+        </div>
+        <div class="order-meta">
+            <span>{{ order.created_at }}</span>
+            <span>{{ order.item_count }} items</span>
+            <strong>₹{{ '%.2f'|format(order.total_amount) }}</strong>
+        </div>
+        <div class="order-actions">
+            <a href="{{ url_for('order_success', order_number=order.order_id) }}" class="secondary-btn">View order details</a>
+        </div>
+    </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="empty-state">
+    <i class="fa-solid fa-box-open"></i>
+    <h2>No orders yet</h2>
+    <p>Your purchases will appear here after checkout.</p>
+    <a href="{{ url_for('products') }}" class="primary-btn">Start shopping</a>
+</section>
+{% endif %}
+{% endblock %}

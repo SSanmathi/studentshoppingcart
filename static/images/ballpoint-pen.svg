@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Blue ballpoint pen</title><desc id="desc">Illustration of a blue ballpoint pen with a writing tip.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(-35 400 300)"><rect x="360" y="105" width="82" height="360" rx="30" fill="#2563eb"/><rect x="367" y="145" width="68" height="230" rx="12" fill="#3b82f6"/><path d="M360 425h82l-41 105z" fill="#cbd5e1"/><path d="M401 530v28" stroke="#334155" stroke-width="8"/><path d="M380 110q21-43 42 0" fill="none" stroke="#0f172a" stroke-width="10"/><path d="M443 180q42 20 0 82" fill="none" stroke="#bfdbfe" stroke-width="12"/></g>
+</svg>

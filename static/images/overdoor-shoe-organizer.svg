@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Over-door shoe organizer</title><desc id="desc">Illustration of a hanging fabric organizer with transparent pockets holding shoes.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M300 100v45m200-45v45" stroke="#64748b" stroke-width="14" stroke-linecap="round"/>
+<path d="M270 145h260v360H270z" fill="#dbeafe" stroke="#2563eb" stroke-width="8"/>
+<g fill="#fff" stroke="#64748b" stroke-width="6">
+<path d="M300 185h95v75h-95zM405 185h95v75h-95zM300 280h95v75h-95zM405 280h95v75h-95zM300 375h95v75h-95zM405 375h95v75h-95z"/>
+</g>
+<g fill="#fbbf24" stroke="#92400e" stroke-width="5">
+<path d="M319 235q14-33 37 0h20v12h-57zM424 330q14-33 37 0h20v12h-57zM319 425q14-33 37 0h20v12h-57z"/>
+</g>
+</svg>

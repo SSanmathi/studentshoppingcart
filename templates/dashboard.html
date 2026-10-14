@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Student Cart{% endblock %}
+
+{% block content %}
+<section class="dashboard-welcome">
+    <div>
+        <span class="eyebrow">Your student shopping dashboard</span>
+        <h1>Welcome back, {{ user.full_name }}.</h1>
+        <p>Shop study and hostel essentials while keeping your plans on budget.</p>
+    </div>
+    <form method="GET" action="{{ url_for('products') }}" class="search-box dashboard-search" role="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="product-search-input" class="global-search-input" type="search" name="q" placeholder="Search {{ catalog_count }} products, styles, and uses" autocomplete="off" aria-label="Search the complete catalogue">
+        <button id="clear-product-search" type="button" aria-label="Clear search">×</button>
+        <div class="search-suggestions" id="product-search-suggestions" role="listbox"></div>
+    </form>
+</section>
+
+<section class="panel student-budget" data-budget="{{ budget_summary.budget }}" data-cart-total="{{ budget_summary.cart_total }}">
+    <div class="panel-header">
+        <div>
+            <span class="eyebrow">My Student Budget</span>
+            <h2>Make every rupee count</h2>
+        </div>
+        <a href="{{ url_for('budget') }}" class="secondary-btn small-btn">Edit budget</a>
+    </div>
+    <div class="budget-overview">
+        <div><small>Shopping budget</small><strong>₹{{ '%.2f'|format(budget_summary.budget) }}</strong></div>
+        <div><small>Current cart total</small><strong class="live-cart-total">₹{{ '%.2f'|format(budget_summary.cart_total) }}</strong></div>
+        <div><small>Remaining</small><strong class="live-budget-remaining">₹{{ '%.2f'|format(budget_summary.remaining) }}</strong></div>
+        <div class="budget-progress"><div class="progress-bar"><span style="width: {{ budget_summary.percent }}%"></span></div><small>{{ '%.1f'|format(budget_summary.percent) }}% of budget used</small></div>
+    </div>
+    {% if budget_summary.remaining < 0 %}
+        <p class="budget-warning"><i class="fa-solid fa-triangle-exclamation"></i> Your cart is ₹{{ '%.2f'|format(-budget_summary.remaining) }} over budget. Update your budget or adjust your cart.</p>
+    {% endif %}
+</section>
+
+<section class="panel student-tools-panel">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Plan ahead</span><h2>Student tools</h2></div>
+    </div>
+    <div class="student-tools-grid">
+        <a class="student-tool-card" href="{{ url_for('kit_planner') }}"><strong>Smart Semester Kit</strong><span>Build course-aware recommendations within your own budget.</span></a>
+        <a class="student-tool-card" href="{{ url_for('hostel_move_in') }}"><strong>Hostel Move-In Planner</strong><span>Check off what you own and price the essentials still missing.</span></a>
+        <a class="student-tool-card" href="{{ url_for('budget_challenge') }}"><strong>Student Budget Challenge</strong><span>Explore purpose-based product baskets that fit a chosen limit.</span></a>
+        <a class="student-tool-card" href="{{ url_for('compare_products') }}"><strong>Compare Products</strong><span>Review two or three options side by side using catalogue data.</span></a>
+    </div>
+</section>
+
+<section class="dashboard-categories catalog-section" aria-labelledby="category-title">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Browse by need</span><h2 id="category-title">Shop student categories</h2></div>
+    </div>
+    <div class="category-grid">
+        <a href="{{ url_for('products', category='Stationery') }}" class="category-card">
+            <img src="{{ url_for('static', filename='images/catalog/highlighter-set.jpg') }}" alt="" loading="lazy" decoding="async">
+            <span>Stationery</span><small>Everyday and international styles</small>
+        </a>
+        <a href="{{ url_for('products', category='Books') }}" class="category-card">
+            <img src="{{ url_for('static', filename='images/catalog/clean-code-cover.jpg') }}" alt="" loading="lazy" decoding="async">
+            <span>Books</span><small>Programming and study references</small>
+        </a>
+        <a href="{{ url_for('products', category='Hostel Essentials') }}" class="category-card">
+            <img src="{{ url_for('static', filename='images/catalog/bedsheet-students.jpg') }}" alt="" loading="lazy" decoding="async">
+            <span>Hostel Essentials</span><small>Room, personal care, and snacks</small>
+        </a>
+        <a href="{{ url_for('products', category='snacks') }}" class="category-card">
+            <img src="{{ url_for('static', filename='images/catalog/packaged-biscuits.jpg') }}" alt="" loading="lazy" decoding="async">
+            <span>Snacks</span><small>Packaged student snacks</small>
+        </a>
+        <a href="{{ url_for('products', category='international') }}" class="category-card">
+            <img src="{{ url_for('static', filename='images/catalog/gel-pen-pack.jpg') }}" alt="" loading="lazy" decoding="async">
+            <span>International Products</span><small>Country-inspired stationery</small>
+        </a>
+    </div>
+</section>
+
+{% if low_stock_products %}
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Live stock status</span><h2>Running low</h2><p>Only products with five or fewer units currently in stock are shown.</p></div>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in low_stock_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Curated stationery</span><h2>Around the World Stationery</h2><p>Explore country-inspired styles. Labels describe style, not verified manufacturing origin.</p></div>
+        <a href="{{ url_for('products', category='international') }}" class="text-link">Explore all</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in international_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Student favourites</span><h2>Popular Stationery</h2></div>
+        <a href="{{ url_for('products', category='Stationery') }}" class="text-link">Browse stationery</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in featured %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+
+{% if recently_viewed_products %}
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Pick up where you left off</span><h2>Recently Viewed</h2></div>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in recently_viewed_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Study and reference</span><h2>Popular Books</h2><p>Sample book listings and demonstration prices.</p></div>
+        <a href="{{ url_for('products', category='Books') }}" class="text-link">Explore books</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in books %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Small-space essentials</span><h2>Hostel Essentials</h2><p>Sample catalogue prices for demonstration, not live market quotes.</p></div>
+        <a href="{{ url_for('products', category='hostel') }}" class="text-link">Explore all</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in hostel_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Quick campus breaks</span><h2>Packaged Snacks</h2><p>Packaged food items are grouped here and within Hostel Essentials.</p></div>
+        <a href="{{ url_for('products', category='snacks') }}" class="text-link">Browse snacks</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in snack_products %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="catalog-section">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Affordable recommendations</span><h2>Recommended Within Your Budget</h2></div>
+        <a href="{{ url_for('products', max_price=budget_summary.budget) }}" class="text-link">Shop under ₹{{ '%.0f'|format(budget_summary.budget) }}</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in budget_recommendations %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+
+<section class="kit-planner-promo">
+    <div><span class="eyebrow">Plan before you buy</span><h2>Smart Student Kit Planner</h2><p>Build a study or hostel kit from real catalogue items, compare the total with your budget, and add only the products you confirm.</p></div>
+    <a href="{{ url_for('kit_planner') }}" class="primary-btn">Plan my kit</a>
+</section>
+{% endblock %}

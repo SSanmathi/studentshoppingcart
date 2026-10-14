@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">File folders</title><desc id="desc">Illustration of a sturdy tabbed file folder for organizing papers.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M180 205h175l45 42h220a28 28 0 0 1 28 28v165a30 30 0 0 1-30 30H180a30 30 0 0 1-30-30V235a30 30 0 0 1 30-30z" fill="#fbbf24"/><path d="M155 285h485l-34 154a28 28 0 0 1-27 22H181a28 28 0 0 1-27-22z" fill="#fcd34d"/><path d="M245 330h285" stroke="#b45309" stroke-width="8" stroke-linecap="round" opacity=".4"/>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Geometry box</title><desc id="desc">Illustration of an open geometry case with compass, ruler, and protractor.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="165" y="205" width="470" height="245" rx="30" fill="#0f766e"/><rect x="185" y="225" width="430" height="205" rx="20" fill="#ccfbf1"/><path d="M260 355a85 85 0 0 1 170 0" fill="none" stroke="#2563eb" stroke-width="15"/><path d="M300 250l-48 120m78-120-12 120" stroke="#64748b" stroke-width="10"/><rect x="460" y="260" width="105" height="28" rx="6" fill="#fbbf24"/><path d="M475 260v15m22-15v10m22-10v15m22-15v10" stroke="#92400e" stroke-width="4"/><circle cx="545" cy="365" r="22" fill="#f472b6"/>
+</svg>

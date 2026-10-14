@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">HB pencils</title><desc id="desc">Illustration of wooden HB pencils with sharpened graphite tips.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(-32 400 300)"><rect x="330" y="125" width="70" height="340" rx="8" fill="#fbbf24"/><path d="M330 125h70l-35-78z" fill="#f1d0a5"/><path d="M365 47l-12 25 24 0z" fill="#334155"/><rect x="330" y="430" width="70" height="35" fill="#ef4444"/><rect x="330" y="457" width="70" height="22" rx="8" fill="#f9a8d4"/></g>
+<g transform="rotate(12 480 300)"><rect x="455" y="155" width="65" height="310" rx="8" fill="#f59e0b"/><path d="M455 155h65l-32-72z" fill="#f1d0a5"/><path d="M488 83l-11 22h22z" fill="#334155"/><rect x="455" y="432" width="65" height="33" fill="#ef4444"/></g>
+</svg>

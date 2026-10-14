@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Lists | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Hostel & study lists</span>
+        <h1>Shopping lists</h1>
+        <p>These lists are private to your account on this device/server; they do not sync to roommates.</p>
+    </div>
+</section>
+
+<section class="panel list-create-panel">
+    <form method="POST" class="simple-form inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="input-group">
+            <label for="list_name">New list name</label>
+            <input type="text" id="list_name" name="list_name" placeholder="Semester project supplies">
+        </div>
+        <button type="submit" class="primary-btn">Create list</button>
+    </form>
+</section>
+
+{% if lists %}
+<section class="list-grid">
+    {% for entry in lists %}
+    <div class="panel list-card">
+        <div class="panel-header">
+            <h3>{{ entry.list.name }}</h3>
+            <span>₹{{ '%.2f'|format(entry.total) }}</span>
+        </div>
+        {% if entry.duplicate_count %}<p class="budget-warning">{{ entry.duplicate_count }} duplicate product entr{{ 'y' if entry.duplicate_count == 1 else 'ies' }} may represent duplicate purchases.</p>{% endif %}
+
+        {% if entry["items"] %}
+            {% for item in entry["items"] %}
+            <div class="shopping-item">
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <small>₹{{ '%.2f'|format(item.effective_price) }} each · Qty {{ item.quantity }}{% if item.applied_offer %} · {{ item.applied_offer.title }}{% endif %}{% if item.assigned_to %} · For {{ item.assigned_to }}{% endif %}</small>
+                </div>
+                <div class="shopping-actions">
+                    <form method="POST" action="{{ url_for('toggle_shopping_list_item', item_id=item.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="toggle-btn {% if item.purchased %}done{% endif %}">
+                            {% if item.purchased %}Purchased{% else %}Mark bought{% endif %}
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('delete_shopping_list_item', item_id=item.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="link-btn danger-text">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-copy">No items added yet.</p>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('add_to_shopping_list', list_id=entry.list.id) }}" class="simple-form add-to-list-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="list_id" value="{{ entry.list.id }}">
+            <select name="product_id">
+                {% for product in products %}
+                    <option value="{{ product.id }}">{{ product.name }} - ₹{{ '%.2f'|format(product.effective_price) }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="quantity" value="1" min="1" max="99" aria-label="Quantity">
+            <input type="text" name="assigned_to" maxlength="60" placeholder="Roommate (optional)" aria-label="Assign to roommate">
+            <button type="submit" class="secondary-btn">Add item</button>
+        </form>
+    </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="empty-state padded">
+    <i class="fa-solid fa-list"></i>
+    <h2>No shopping lists yet</h2>
+    <p>Create a list for your semester, project, or hostel essentials.</p>
+</section>
+{% endif %}
+{% endblock %}

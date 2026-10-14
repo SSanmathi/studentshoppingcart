@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Cart{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="toast-stack">
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if session.get('user_id') %}
+        <nav class="navbar">
+            <div class="nav-brand">
+                <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-shop"></i> Student Cart</a>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('products') }}">Products</a>
+                <a href="{{ url_for('shopping_lists') }}">Lists</a>
+                <a href="{{ url_for('budget') }}">Budget</a>
+                <a href="{{ url_for('orders') }}">Orders</a>
+                <a href="{{ url_for('profile') }}">Profile</a>
+            </div>
+            <div class="nav-actions">
+                <a class="cart-pill" href="{{ url_for('cart') }}"><i class="fa-solid fa-cart-shopping"></i> Cart <span>{{ cart_count if cart_count is defined else 0 }}</span></a>
+                <a class="logout-btn" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </nav>
+    {% endif %}
+
+    <main class="page-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Student scissors</title><desc id="desc">Illustration of safety scissors with two blades and teal finger loops.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<circle cx="290" cy="375" r="68" fill="none" stroke="#14b8a6" stroke-width="28"/><circle cx="435" cy="375" r="68" fill="none" stroke="#14b8a6" stroke-width="28"/><circle cx="362" cy="290" r="20" fill="#475569"/><path d="M348 280L515 130q28-22 46 0l-176 180m-34-30L230 130q-20-23-44-1l158 185" fill="#cbd5e1" stroke="#64748b" stroke-width="10" stroke-linejoin="round"/>
+</svg>

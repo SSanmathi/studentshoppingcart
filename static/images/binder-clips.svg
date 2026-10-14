@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Binder clips</title><desc id="desc">Illustration of black binder clips with silver wire handles.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M260 290q0-55 55-55h170q55 0 55 55v105q0 38-38 38H298q-38 0-38-38z" fill="#1e293b"/><path d="M310 235v-75q0-38 34-38t34 38v78m88-3v-75q0-38 34-38t34 38v78" fill="none" stroke="#94a3b8" stroke-width="14"/><path d="M280 385h240" stroke="#334155" stroke-width="14"/>
+</svg>

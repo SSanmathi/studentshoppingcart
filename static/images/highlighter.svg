@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Highlighter set</title><desc id="desc">Illustration of bright chisel-tip highlighters in several colours.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(-27 400 300)"><rect x="275" y="168" width="68" height="295" rx="18" fill="#facc15"/><path d="M275 190h68v44h-68z" fill="#fde047"/><path d="M275 168l34-45 34 45z" fill="#eab308"/><rect x="375" y="145" width="68" height="318" rx="18" fill="#fb7185"/><path d="M375 168h68v48h-68z" fill="#fda4af"/><path d="M375 145l34-45 34 45z" fill="#e11d48"/><rect x="475" y="190" width="68" height="273" rx="18" fill="#38bdf8"/><path d="M475 190l34-42 34 42z" fill="#0284c7"/></g>
+</svg>

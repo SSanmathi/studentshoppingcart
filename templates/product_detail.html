@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} | Student Cart{% endblock %}
+
+{% block content %}
+<section class="detail-layout">
+    <div class="detail-media">
+        <img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}" fetchpriority="high" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(product.category) }}';this.alt=this.alt+' (category illustration)';">
+    </div>
+    <div class="detail-info">
+        <span class="eyebrow">{{ product.style_label or product.category }}</span>
+        <h1>{{ product.name }}</h1>
+        <div class="product-meta">
+            {% if review_count %}
+                <a href="#reviews" class="detail-review-summary"><i class="fa-solid fa-star"></i> {{ '%.1f'|format(average_rating) }} from {{ review_count }} review{% if review_count != 1 %}s{% endif %}</a>
+            {% else %}
+                <a href="#reviews" class="detail-review-summary">No reviews yet</a>
+            {% endif %}
+            <span class="{% if not product.stock %}out-of-stock{% elif product.stock <= 5 %}low-stock{% endif %}">
+                {% if not product.stock %}Out of stock{% elif product.stock <= 5 %}Only {{ product.stock }} left{% else %}{{ product.stock }} in stock{% endif %}
+            </span>
+        </div>
+        {% if product.country_label %}<p class="origin-label">{{ product.country_label }}</p>{% endif %}
+        {% if product.brand %}<p class="detail-brand">Brand: {{ product.brand }}</p>{% endif %}
+        {% if product.subcategory %}<p class="detail-subcategory">Product type: {{ product.subcategory }}</p>{% endif %}
+        <div class="price-row">
+            <strong>₹{{ '%.2f'|format(product.effective_price) }}</strong>
+            {% if product.applied_offer %}
+                <span class="original-price">₹{{ '%.2f'|format(product.list_price) }}</span>
+                <span class="discount-badge">{{ '%.2f'|format(product.discount_percentage) }}% OFF</span>
+                <small>Save ₹{{ '%.2f'|format(product.discount_amount) }} at quantity 1</small>
+            {% endif %}
+        </div>
+        {% if product.available_offers %}
+            <section class="product-offers" aria-label="Available offers">
+                <h2>Available Student Cart offers</h2>
+                {% for offer in product.available_offers %}
+                    <article class="product-offer-card">
+                        <strong>{{ offer.title }}</strong>
+                        <p>{{ offer.terms }}</p>
+                        {% if offer.min_quantity > 1 %}<p>Minimum quantity: {{ offer.min_quantity }}</p>{% endif %}
+                        <small>Valid {{ offer.starts_at[:10] }} to {{ offer.ends_at[:10] }}</small>
+                    </article>
+                {% endfor %}
+            </section>
+        {% endif %}
+        <p>{{ product.description }}</p>
+        {% if product.intended_use and product.intended_use != product.description %}
+            <p><strong>Suggested use:</strong> {{ product.intended_use }}</p>
+        {% endif %}
+        {% if product.specifications %}
+            <section class="product-specifications" aria-labelledby="specifications-title">
+                <h2 id="specifications-title">Specifications</h2>
+                <p>{{ product.specifications }}</p>
+            </section>
+        {% else %}
+            <p class="muted-note">Additional specifications are not available for this listing.</p>
+        {% endif %}
+        {% if product.image_credit_url %}<small class="photo-credit">Photo: {{ product.image_credit_text or 'see source attribution' }} · <a href="{{ product.image_credit_url }}" target="_blank" rel="noopener noreferrer">source and license</a></small>{% endif %}
+
+        <form action="{{ url_for('add_to_cart') }}" method="POST" class="purchase-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <label for="quantity">Quantity</label>
+            <div class="qty-control">
+                <button type="button" class="qty-btn" data-action="minus" {% if not product.stock %}disabled{% endif %}>-</button>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock }}" {% if not product.stock %}disabled{% endif %}>
+                <button type="button" class="qty-btn" data-action="plus" {% if not product.stock %}disabled{% endif %}>+</button>
+            </div>
+            <button type="submit" class="primary-btn" {% if not product.stock %}disabled{% endif %}>Add to cart</button>
+            <button type="submit" name="buy_now" value="1" class="secondary-btn" {% if not product.stock %}disabled{% endif %}>Buy now</button>
+        </form>
+        <form action="{{ url_for('toggle_wishlist', product_id=product.id) }}" method="POST" class="detail-wishlist-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="secondary-btn">{% if is_wishlisted %}Remove from wishlist{% else %}Add to wishlist{% endif %}</button>
+        </form>
+    </div>
+</section>
+
+<section class="review-section" id="reviews">
+    <div class="panel-header">
+        <div>
+            <h2>Customer reviews</h2>
+            {% if review_count %}
+                <p><strong>{{ '%.1f'|format(average_rating) }} / 5</strong> based on {{ review_count }} account review{% if review_count != 1 %}s{% endif %}</p>
+            {% else %}
+                <p>No reviews yet. Be the first to share your experience.</p>
+            {% endif %}
+        </div>
+    </div>
+    <form action="{{ url_for('submit_product_review', product_id=product.id) }}" method="POST" class="review-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="review-rating">Your rating</label>
+        <select id="review-rating" name="rating" required>
+            <option value="">Choose a rating</option>
+            {% for score in range(5, 0, -1) %}
+                <option value="{{ score }}" {% if my_review and my_review.rating == score %}selected{% endif %}>{{ score }} / 5</option>
+            {% endfor %}
+        </select>
+        <label for="review-text">Your review</label>
+        <textarea id="review-text" name="review_text" rows="4" minlength="3" maxlength="1000" required placeholder="Share useful details about this product">{% if my_review %}{{ my_review.review_text }}{% endif %}</textarea>
+        <button type="submit" class="primary-btn">{% if my_review %}Update review{% else %}Submit review{% endif %}</button>
+    </form>
+    {% if reviews %}
+        <div class="review-list">
+            {% for review in reviews %}
+                <article class="review-card">
+                    <div class="review-card-heading"><strong>{{ review.reviewer_name }}</strong><span>{{ review.rating }} / 5</span></div>
+                    <p>{{ review.review_text }}</p>
+                    <small>{{ review.updated_at }}</small>
+                </article>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<section class="related-section">
+    <div class="panel-header">
+        <h2>Related products</h2>
+    </div>
+    <div class="product-grid compact">
+        {% for product in related %}
+            {% include 'partials/product_card.html' with context %}
+        {% endfor %}
+    </div>
+</section>
+
+{% if lower_price_alternatives %}
+<section class="related-section">
+    <div class="panel-header"><h2>Similar products at lower prices</h2></div>
+    <div class="product-grid compact">
+        {% for product in lower_price_alternatives %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if recently_viewed %}
+<section class="related-section">
+    <div class="panel-header"><h2>Recently viewed</h2></div>
+    <div class="product-grid compact">
+        {% for product in recently_viewed %}
+            {% include 'partials/product_card.html' %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

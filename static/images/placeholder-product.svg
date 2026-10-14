@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+  <title id="title">Product photo unavailable</title>
+  <desc id="desc">A neutral placeholder shown when a verified product photograph is not available.</desc>
+  <rect width="800" height="600" fill="#f6f8fb"/>
+  <rect x="100" y="70" width="600" height="460" rx="28" fill="#fff" stroke="#e2e8f0" stroke-width="3"/>
+  <rect x="318" y="178" width="164" height="118" rx="20" fill="#f1f5f9" stroke="#94a3b8" stroke-width="10"/>
+  <path d="M350 178l18-24h64l18 24" fill="none" stroke="#94a3b8" stroke-width="10" stroke-linejoin="round"/>
+  <circle cx="400" cy="236" r="34" fill="none" stroke="#64748b" stroke-width="10"/>
+  <text x="400" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-size="27" font-weight="700" fill="#334155">Photo coming soon</text>
+  <text x="400" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="19" fill="#64748b">Student Cart catalogue</text>
+</svg>

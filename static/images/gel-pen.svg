@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Gel pens</title><desc id="desc">Illustration of a smooth gel pen with a translucent barrel and fine tip.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<g transform="rotate(32 400 300)"><rect x="360" y="110" width="80" height="355" rx="36" fill="#14b8a6"/><rect x="374" y="142" width="52" height="220" rx="24" fill="#ccfbf1"/><path d="M360 424h80l-40 105z" fill="#94a3b8"/><path d="M400 529v28" stroke="#334155" stroke-width="8"/><rect x="370" y="100" width="60" height="42" rx="18" fill="#0f766e"/><path d="M443 175q40 20 0 78" fill="none" stroke="#0f766e" stroke-width="10"/></g>
+</svg>

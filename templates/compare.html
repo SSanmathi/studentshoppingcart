@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Products | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Choose what fits your needs</span>
+        <h1>Compare products</h1>
+        <p>Select two or three catalogue items to compare prices, applicable Student Cart offers, specifications, reviews, and live stock.</p>
+    </div>
+</section>
+
+<form method="POST" class="panel compare-picker">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="compare-products">Products (select 2–3)</label>
+    <select id="compare-products" name="product_ids" multiple size="10" required>
+        {% for product in products %}
+        <option value="{{ product.id }}" {% if product.id in selected_ids %}selected{% endif %}>{{ product.name }} — ₹{{ '%.2f'|format(product.effective_price) }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="primary-btn">Compare selected</button>
+</form>
+
+{% if selected_products %}
+<section class="panel comparison-panel">
+    <div class="panel-header"><h2>Side-by-side comparison</h2></div>
+    <div class="comparison-scroll">
+        {% set lowest_price = selected_products|map(attribute='effective_price')|min %}
+        {% set highest_stock = selected_products|map(attribute='stock')|max %}
+        <table class="comparison-table">
+            <tbody>
+                <tr><th scope="row">Product</th>{% for product in selected_products %}<td><a href="{{ url_for('product_detail', product_id=product.id) }}"><img class="comparison-image" src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ product_image_fallback(product.category) }}';this.alt=this.alt+' (category illustration)';"><strong>{{ product.name }}</strong></a></td>{% endfor %}</tr>
+                <tr><th scope="row">Category</th>{% for product in selected_products %}<td>{{ product.category }}{% if product.subcategory %} · {{ product.subcategory }}{% endif %}</td>{% endfor %}</tr>
+                <tr><th scope="row">Current price</th>{% for product in selected_products %}<td {% if product.effective_price == lowest_price %}class="comparison-best"{% endif %}><strong>₹{{ '%.2f'|format(product.effective_price) }}</strong>{% if product.applied_offer %}<br><del>₹{{ '%.2f'|format(product.list_price) }}</del><br>Save ₹{{ '%.2f'|format(product.discount_amount) }} ({{ '%.2f'|format(product.discount_percentage) }}%)<br>{{ product.applied_offer.title }}{% endif %}{% if product.effective_price == lowest_price %}<br><small>Lowest current price</small>{% endif %}</td>{% endfor %}</tr>
+                <tr><th scope="row">Specifications</th>{% for product in selected_products %}<td>{{ product.specifications or 'Not listed' }}</td>{% endfor %}</tr>
+                <tr><th scope="row">Brand / style</th>{% for product in selected_products %}<td>{{ product.brand or product.style_label or 'Not specified' }}</td>{% endfor %}</tr>
+                <tr><th scope="row">Customer rating</th>{% for product in selected_products %}<td>{% if product.review_count %}{{ '%.1f'|format(product.customer_rating) }} / 5 ({{ product.review_count }} reviews){% else %}No reviews yet{% endif %}</td>{% endfor %}</tr>
+                <tr><th scope="row">Availability</th>{% for product in selected_products %}<td {% if product.stock == highest_stock and product.stock > 0 %}class="comparison-best"{% endif %}>{% if product.stock %}{{ product.stock }} in stock{% else %}Out of stock{% endif %}{% if product.stock == highest_stock and product.stock > 0 %}<br><small>Most available</small>{% endif %}</td>{% endfor %}</tr>
+                <tr><th scope="row">Description</th>{% for product in selected_products %}<td>{{ product.description }}</td>{% endfor %}</tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Stapler</title><desc id="desc">Illustration of a desktop stapler with a hinged top arm and base.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M230 335h355a28 28 0 0 1 28 28v36H230z" fill="#334155"/><path d="M240 325l75-125h200a70 70 0 0 1 70 70v55z" fill="#14b8a6"/><path d="M315 200h200a70 70 0 0 1 70 70v12H280z" fill="#2dd4bf"/><path d="M305 306h200" stroke="#0f766e" stroke-width="12"/><circle cx="270" cy="365" r="12" fill="#94a3b8"/>
+</svg>

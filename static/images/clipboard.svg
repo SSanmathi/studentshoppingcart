@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Clipboard</title><desc id="desc">Illustration of a writing clipboard with a metal clip and paper sheet.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="250" y="130" width="300" height="390" rx="28" fill="#b45309"/><rect x="272" y="158" width="256" height="330" rx="12" fill="#fff"/><rect x="340" y="112" width="120" height="62" rx="16" fill="#64748b"/><rect x="365" y="130" width="70" height="22" rx="10" fill="#cbd5e1"/><path d="M310 245h180m-180 45h180m-180 45h180m-180 45h140" stroke="#93c5fd" stroke-width="7"/>
+</svg>

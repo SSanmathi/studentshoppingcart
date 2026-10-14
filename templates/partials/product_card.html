@@ -1,0 +1,59 @@
+<article class="product-card" data-price="{{ product.price }}" data-search="{{ product.name }} {{ product.category }} {{ product.description }} {{ product.search_tags }} {{ product.country_label }} {{ product.style_label }}">
+    <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
+        <img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(product.category) }}';this.alt=this.alt+' (category illustration)';">
+    </a>
+    <div class="product-content">
+        <div class="product-header">
+            <span class="product-category">{{ product.style_label or product.category }}</span>
+            {% if product.review_count %}
+                <a href="{{ url_for('product_detail', product_id=product.id) }}#reviews" class="product-rating" aria-label="{{ '%.1f'|format(product.customer_rating) }} out of 5 from {{ product.review_count }} reviews">
+                    <i class="fa-solid fa-star" aria-hidden="true"></i> {{ '%.1f'|format(product.customer_rating) }} <span>({{ product.review_count }})</span>
+                </a>
+            {% else %}
+                <span class="product-review-link">No reviews yet</span>
+            {% endif %}
+        </div>
+        <h3>{{ product.name }}</h3>
+        <div class="price-line">
+            <strong>₹{{ '%.2f'|format(product.effective_price) }}</strong>
+            {% if product.applied_offer %}
+                <span class="original-price">₹{{ '%.2f'|format(product.list_price) }}</span>
+                <span class="discount-badge">{{ '%.2f'|format(product.discount_percentage) }}% OFF</span>
+            {% endif %}
+        </div>
+        {% if product.available_offers %}
+            {% for offer in product.available_offers %}
+                <small class="product-offer">{{ offer.title }}{% if offer.min_quantity > 1 %} · Buy {{ offer.min_quantity }}+{% endif %}</small>
+            {% endfor %}
+        {% endif %}
+        {% if product.price_difference is defined %}
+            <small class="product-offer">Save ₹{{ '%.2f'|format(product.price_difference) }} vs. this product</small>
+        {% endif %}
+        <p>{{ product.description[:100] }}{% if product.description|length > 100 %}…{% endif %}</p>
+        {% if product.country_label %}
+            <small class="origin-label">{{ product.country_label }}</small>
+        {% endif %}
+        <div class="product-footer">
+            <small class="product-stock {% if product.stock == 0 %}out-of-stock{% elif product.stock <= 5 %}low-stock{% endif %}">
+                {% if not product.stock %}Out of stock{% elif product.stock <= 5 %}Only {{ product.stock }} left{% else %}In stock{% endif %}
+            </small>
+            <div class="card-actions">
+                <div class="card-action-row">
+                    <form action="{{ url_for('add_to_cart') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="primary-btn small-btn" {% if not product.stock %}disabled{% endif %} aria-label="Add {{ product.name }} to cart">Add to cart</button>
+                    </form>
+                    <form action="{{ url_for('toggle_wishlist', product_id=product.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="wishlist-btn {% if product.id in wishlisted_product_ids %}active{% endif %}" aria-label="{% if product.id in wishlisted_product_ids %}Remove {{ product.name }} from wishlist{% else %}Add {{ product.name }} to wishlist{% endif %}" title="Toggle wishlist">
+                            <i class="{% if product.id in wishlisted_product_ids %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i>
+                        </button>
+                    </form>
+                </div>
+                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="secondary-btn small-btn product-details-btn">View details</a>
+            </div>
+        </div>
+    </div>
+</article>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Mathematical drawing instruments</title><desc id="desc">Illustration of a ruler, triangular set squares, protractor, and compass.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<rect x="145" y="160" width="510" height="320" rx="30" fill="#dbeafe" stroke="#2563eb" stroke-width="8"/>
+<rect x="190" y="205" width="420" height="48" rx="10" fill="#fbbf24"/>
+<path d="M215 205v25m40-25v17m40-17v25m40-25v17m40-17v25m40-25v17m40-17v25m40-25v17m40-17v25" stroke="#92400e" stroke-width="4"/>
+<path d="M220 410l110-110v110z" fill="#14b8a6" fill-opacity=".75" stroke="#0f766e" stroke-width="7"/>
+<path d="M365 410l100-100 100 100z" fill="#f472b6" fill-opacity=".65" stroke="#be185d" stroke-width="7"/>
+<path d="M515 285a62 62 0 0 1 0 124" fill="none" stroke="#0f172a" stroke-width="9"/>
+<circle cx="515" cy="285" r="8" fill="#0f172a"/>
+</svg>

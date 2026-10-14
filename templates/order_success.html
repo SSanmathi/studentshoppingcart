@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmed | Student Cart{% endblock %}
+
+{% block content %}
+<section class="success-shell">
+    <div class="success-card">
+        <i class="fa-solid fa-circle-check"></i>
+        <span class="eyebrow">Order confirmed</span>
+        <h1>{{ order.order_id }}</h1>
+        <p>Your order has been placed successfully. Payment method: {{ order.payment_method }} (demo mode).</p>
+        <div class="order-summary-grid">
+            {% for item in items %}
+            <div class="mini-order-item">
+                <img src="{{ item.image_url or product_image_fallback(item.category) }}" alt="{{ item.name }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(item.category) }}';this.alt=this.alt+' (category illustration)';">
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <small>{{ item.quantity }} × ₹{{ '%.2f'|format(item.unit_price) }}</small>
+                </div>
+                <div class="summary-row"><span>Subtotal</span><strong>₹{{ '%.2f'|format(order.subtotal) }}</strong></div>
+                <div class="summary-row"><span>Discount</span><strong>-₹{{ '%.2f'|format(order.discount_amount) }}</strong></div>
+                <div class="summary-row total"><span>Total</span><strong>₹{{ '%.2f'|format(order.total_amount) }}</strong></div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="success-actions">
+            <a href="{{ url_for('orders') }}" class="primary-btn">View orders</a>
+            <a href="{{ url_for('products') }}" class="secondary-btn">Continue shopping</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

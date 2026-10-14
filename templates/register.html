@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Student Cart{% endblock %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card large-card">
+        <div class="auth-header">
+            <span class="eyebrow">Get started</span>
+            <h2>Create your student account</h2>
+        </div>
+        <form method="POST" class="auth-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="name">Full name</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
+                <div class="input-group">
+                    <label for="college_name">College / School Name</label>
+                    <input type="text" id="college_name" name="college_name" required autocomplete="organization" placeholder="Your college or school">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="department">Department (optional)</label>
+                <input type="text" id="department" name="department" maxlength="100" autocomplete="organization-title" placeholder="Your course or department">
+            </div>
+            <div class="input-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required placeholder="student@college.edu">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Choose a secure password">
+            </div>
+            <button type="submit" class="primary-btn block-btn">Create student account</button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
+</section>
+{% endblock %}

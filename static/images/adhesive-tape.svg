@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Adhesive tape roll</title><desc id="desc">Illustration of a clear adhesive tape roll with a cardboard core.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<circle cx="400" cy="300" r="175" fill="#bfdbfe" fill-opacity=".72" stroke="#3b82f6" stroke-width="18"/><circle cx="400" cy="300" r="76" fill="#f8fafc" stroke="#cbd5e1" stroke-width="12"/><path d="M520 184l96 65-52 76-98-65z" fill="#dbeafe" stroke="#3b82f6" stroke-width="8"/><path d="M510 176l-9-20" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+</svg>

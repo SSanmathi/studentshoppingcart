@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Checkout</span>
+        <h1>Complete your order</h1>
+    </div>
+</section>
+
+<section class="checkout-layout">
+    <div class="panel checkout-form-panel">
+        <form method="POST" class="checkout-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="panel-header">
+                <h2>Delivery details</h2>
+                <span class="eyebrow">Choose how to receive your order</span>
+            </div>
+            <div class="input-group">
+                <label for="delivery_type">Delivery type</label>
+                <select id="delivery_type" name="delivery_type" required>
+                    <option value="pickup">Pickup from campus desk</option>
+                    <option value="delivery">Home delivery</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="delivery_address">Delivery address</label>
+                <textarea id="delivery_address" name="delivery_address" rows="4" maxlength="500" aria-describedby="delivery-address-help" placeholder="Enter your address if delivery is selected"></textarea>
+                <small id="delivery-address-help">Required only for home delivery. Maximum 500 characters.</small>
+            </div>
+            <div class="panel-header">
+                <h2>Payment option</h2>
+            </div>
+            <div class="input-group">
+                <label for="payment_method">Payment option</label>
+                <select id="payment_method" name="payment_method" required>
+                    <option value="cod">Cash on Delivery (Demo)</option>
+                    <option value="demo_wallet">Student Wallet (Demo)</option>
+                </select>
+            </div>
+            <p class="catalogue-demo-note" role="note">Demo checkout only. No real payment will be processed or collected.</p>
+            <button type="submit" class="primary-btn block-btn">Place order</button>
+        </form>
+    </div>
+
+    <aside class="summary-panel">
+        <div class="panel-header"><h2>Order summary</h2></div>
+        {% for item in cart['items'] %}
+        <div class="checkout-item">
+            <img src="{{ item.image_url or product_image_fallback(item.category) }}" alt="{{ item.name }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(item.category) }}';this.alt=this.alt+' (category illustration)';">
+            <a href="{{ url_for('product_detail', product_id=item.product_id) }}">{{ item.name }} × {{ item.quantity }}</a>
+            <strong>₹{{ '%.2f'|format(item.line_total) }}</strong>
+        </div>
+        {% endfor %}
+        <div class="summary-row"><span>Subtotal</span><strong>₹{{ '%.2f'|format(cart['subtotal']) }}</strong></div>
+        <div class="summary-row"><span>Discount</span><strong>-₹{{ '%.2f'|format(cart['discount_amount']) }}</strong></div>
+        <div class="summary-row"><span>Delivery charge</span><strong>₹{{ '%.2f'|format(cart['delivery_charge']) }}</strong></div>
+        <div class="summary-row total"><span>Total</span><strong>₹{{ '%.2f'|format(cart['total']) }}</strong></div>
+    </aside>
+</section>
+{% endblock %}

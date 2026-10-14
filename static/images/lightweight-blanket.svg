@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Folded lightweight blanket</title><desc id="desc">Illustration of a neatly folded soft blanket with stitched edges.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M195 310q0-35 38-48l313-103q42-14 58 26l69 173q15 38-25 54L329 520q-41 15-58-24z" fill="#bfdbfe" stroke="#2563eb" stroke-width="8"/>
+<path d="M242 282l352 143q24 10 48-2l15-8" fill="none" stroke="#93c5fd" stroke-width="18"/>
+<path d="M225 315l70 181m-28-216 88 225m-41-242 95 245" stroke="#dbeafe" stroke-width="8" stroke-linecap="round"/>
+<path d="M205 314q12-26 41-37l308-101" fill="none" stroke="#fff" stroke-width="7" stroke-dasharray="12 12"/>
+</svg>

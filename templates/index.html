@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Cart | Smart Shopping for Students{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <span class="eyebrow">Student essentials, smart spending</span>
+        <h1>Student Cart helps students shop smarter every semester.</h1>
+        <p>Find affordable academic essentials, organize your projects, and stay on budget with a cart that tracks every purchase.</p>
+        <div class="hero-actions">
+            <a href="{{ url_for('register') }}" class="primary-btn">Create account</a>
+            <a href="{{ url_for('login') }}" class="secondary-btn">Log in</a>
+        </div>
+        <div class="hero-stats">
+            <div>
+                <strong>74</strong>
+                <span>Sample products</span>
+            </div>
+            <div>
+                <strong>10</strong>
+                <span>Product categories</span>
+            </div>
+            <div>
+                <strong>₹2000</strong>
+                <span>Budget planner</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-panel">
+        <div class="mini-card">
+            <span>Default student budget</span>
+            <strong>₹2,000</strong>
+            <small>Personalize it anytime after signing in</small>
+        </div>
+        <div class="mini-card accent">
+            <span>Plan your shopping</span>
+            <strong>74 products</strong>
+            <small>Study supplies and hostel essentials</small>
+        </div>
+    </div>
+</section>
+
+<section class="feature-grid">
+    <div class="feature-card">
+        <i class="fa-solid fa-book-open"></i>
+        <h3>Study essentials</h3>
+        <p>Books, stationery, and academic materials tailored for student life.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fa-solid fa-wallet"></i>
+        <h3>Budget control</h3>
+        <p>Set a monthly budget, monitor spending, and avoid overspending.</p>
+    </div>
+    <div class="feature-card">
+        <i class="fa-solid fa-list-check"></i>
+        <h3>Shared lists</h3>
+        <p>Create semester checklists, track what’s purchased, and move items to cart.</p>
+    </div>
+</section>
+{% endblock %}

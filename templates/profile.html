@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Profile & settings</span>
+        <h1>Manage your account</h1>
+    </div>
+</section>
+
+<section class="profile-layout">
+    <div class="panel">
+        <h2>Personal details</h2>
+        <form method="POST" class="simple-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="update_profile">
+            <div class="input-group">
+                <label for="name">Full name</label>
+                <input type="text" id="name" name="name" value="{{ user.full_name }}">
+            </div>
+            <div class="input-group">
+                <label for="college_name">College / School Name</label>
+                <input type="text" id="college_name" name="college_name" value="{{ user.college_name }}" required autocomplete="organization">
+            </div>
+            <div class="input-group">
+                <label for="department">Department</label>
+                <input type="text" id="department" name="department" value="{{ user.department }}" maxlength="100" autocomplete="organization-title">
+            </div>
+            <button type="submit" class="primary-btn">Update profile</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <h2>Change password</h2>
+        <form method="POST" class="simple-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="change_password">
+            <div class="input-group">
+                <label for="current_password">Current password</label>
+                <input type="password" id="current_password" name="current_password" required>
+            </div>
+            <div class="input-group">
+                <label for="new_password">New password</label>
+                <input type="password" id="new_password" name="new_password" required>
+            </div>
+            <div class="input-group">
+                <label for="confirm_password">Confirm new password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            <button type="submit" class="primary-btn">Update password</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Hostel Move-In Planner | Student Cart{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div>
+        <span class="eyebrow">Make move-in day easier</span>
+        <h1>Hostel Move-In Planner</h1>
+        <p>Mark what you already own, review matching stocked products, and estimate only the essentials still missing.</p>
+    </div>
+</section>
+
+<form method="POST" id="move-in-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <section class="panel kit-controls">
+        <div class="kit-total-row">
+            <span>Estimated missing essentials: <strong id="move-in-estimate">₹{{ '%.2f'|format(estimated_missing_total) }}</strong></span>
+            <span>Products selected for cart: <strong id="move-in-selected-total">₹0.00</strong></span>
+        </div>
+        <p class="empty-copy">Checklist costs use the lowest-priced in-stock catalogue match for each item you do not own. Prices are demo estimates.</p>
+    </section>
+
+    {% for row in checklist %}
+        {% if loop.first or row.category != checklist[loop.index0 - 1].category %}
+        <section class="catalog-section">
+            <div class="panel-header section-heading"><h2>{{ row.category }}</h2></div>
+        {% endif %}
+            <article class="move-in-checklist-item" data-estimated-price="{{ row.estimated_price }}">
+                <label class="move-in-owned">
+                    <input type="checkbox" name="owned_items" value="{{ row.key }}" {% if row.is_owned %}checked{% endif %}>
+                    I already have: <strong>{{ row.label }}</strong>
+                </label>
+                {% if row.products %}
+                    <div class="move-in-matches">
+                        {% for product in row.products[:3] %}
+                        <label class="move-in-product">
+                            <input type="checkbox" name="product_ids" value="{{ product.id }}" data-price="{{ product.effective_price }}">
+                            <img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(product.category) }}';this.alt=this.alt+' (category illustration)';">
+                            <span><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name }}</a><small>₹{{ '%.2f'|format(product.effective_price) }} · {{ product.stock }} in stock</small></span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-copy">No matching product is currently in stock.</p>
+                {% endif %}
+            </article>
+        {% if loop.last or row.category != checklist[loop.index0 + 1].category %}
+        </section>
+        {% endif %}
+    {% endfor %}
+
+    <div class="kit-submit-row">
+        <button type="submit" class="primary-btn">Add selected items to cart</button>
+        <a href="{{ url_for('cart') }}" class="secondary-btn">Review cart</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
+<title id="title">Assorted craft paper</title><desc id="desc">Illustration of colourful craft paper sheets with a cut-paper flower.</desc>
+<rect width="800" height="600" rx="32" fill="#edf6f5"/>
+<path d="M180 175h280v330H180z" fill="#a7f3d0" transform="rotate(-9 320 340)"/>
+<path d="M300 140h300v350H300z" fill="#bfdbfe" transform="rotate(7 450 315)"/>
+<path d="M310 215h280v300H310z" fill="#fff" stroke="#cbd5e1" stroke-width="7"/>
+<g transform="translate(450 350)"><circle r="35" fill="#fbbf24"/><ellipse cy="-58" rx="25" ry="45" fill="#fb7185"/><ellipse cy="58" rx="25" ry="45" fill="#fb7185"/><ellipse cx="-58" rx="45" ry="25" fill="#fb7185"/><ellipse cx="58" rx="45" ry="25" fill="#fb7185"/></g>
+<path d="M450 390v78m0-35-35 26m35-13 34 23" fill="none" stroke="#16a34a" stroke-width="11" stroke-linecap="round"/>
+</svg>

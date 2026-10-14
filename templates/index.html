@@ -12,34 +12,10 @@
             <a href="{{ url_for('register') }}" class="primary-btn">Create account</a>
             <a href="{{ url_for('login') }}" class="secondary-btn">Log in</a>
         </div>
-        <div class="hero-stats">
-            <div>
-                <strong>74</strong>
-                <span>Sample products</span>
-            </div>
-            <div>
-                <strong>10</strong>
-                <span>Product categories</span>
-            </div>
-            <div>
-                <strong>₹2000</strong>
-                <span>Budget planner</span>
-            </div>
-        </div>
-    </div>
-    <div class="hero-panel">
-        <div class="mini-card">
-            <span>Default student budget</span>
-            <strong>₹2,000</strong>
-            <small>Personalize it anytime after signing in</small>
-        </div>
-        <div class="mini-card accent">
-            <span>Plan your shopping</span>
-            <strong>74 products</strong>
-            <small>Study supplies and hostel essentials</small>
-        </div>
     </div>
 </section>
+
+{% include 'partials/category_cards.html' %}
 
 <section class="feature-grid">
     <div class="feature-card">

@@ -442,18 +442,6 @@ PRODUCT_IMAGE_OVERRIDES = {
         "image_credit_url": "",
         "image_credit_text": "",
     },
-    "Chart Paper Pack": {
-        "image_url": "/static/images/chart-paper-pack.svg",
-        "image_alt": "Illustration of coloured chart sheets; product photograph unavailable.",
-        "image_credit_url": "",
-        "image_credit_text": "",
-    },
-    "Craft Paper Pack": {
-        "image_url": "/static/images/craft-paper-pack.svg",
-        "image_alt": "Illustration of assorted craft paper; product photograph unavailable.",
-        "image_credit_url": "",
-        "image_credit_text": "",
-    },
     "Document Organizer": {
         "image_url": "/static/images/document-organizer.svg",
         "image_alt": "Illustration of a multi-pocket document organizer; product photograph unavailable.",
@@ -472,27 +460,9 @@ PRODUCT_IMAGE_OVERRIDES = {
         "image_credit_url": "",
         "image_credit_text": "",
     },
-    "Project Board": {
-        "image_url": "/static/images/project-board.svg",
-        "image_alt": "Illustration of an academic presentation board; product photograph unavailable.",
-        "image_credit_url": "",
-        "image_credit_text": "",
-    },
     "Staples Box": {
         "image_url": "/static/images/staples.svg",
         "image_alt": "Illustration of a box of metal staples; product photograph unavailable.",
-        "image_credit_url": "",
-        "image_credit_text": "",
-    },
-    "Desk Organizer": {
-        "image_url": "/static/images/desk-organizer.svg",
-        "image_alt": "Illustration of a desktop stationery organizer; product photograph unavailable.",
-        "image_credit_url": "",
-        "image_credit_text": "",
-    },
-    "Over-door Shoe Organizer": {
-        "image_url": "/static/images/overdoor-shoe-organizer.svg",
-        "image_alt": "Illustration of an over-door pocket shoe organizer; product photograph unavailable.",
         "image_credit_url": "",
         "image_credit_text": "",
     },
@@ -523,6 +493,20 @@ PRODUCT_IMAGE_OVERRIDES = {
         "image_credit_text": "Mike Dickison · CC BY 4.0",
     },
 }
+
+def load_catalog_sources():
+    sources_path = os.path.join(
+        os.path.dirname(__file__),
+        "static",
+        "images",
+        "catalog_sources.json",
+    )
+    with open(sources_path, "r", encoding="utf-8") as source_file:
+        return json.load(source_file)
+
+
+CATALOG_SOURCES = load_catalog_sources()
+CATEGORY_IMAGES = CATALOG_SOURCES["_category_images"]
 
 PRODUCT_BRANDS = {
     "Dove Shampoo Bottle": "Dove",
@@ -611,10 +595,7 @@ HOSTEL_PHOTOS = {
 
 
 def seed_products(connection):
-    sources_path = os.path.join(os.path.dirname(__file__), "static", "images", "catalog_sources.json")
-    with open(sources_path, "r", encoding="utf-8") as source_file:
-        image_sources = json.load(source_file)
-
+    image_sources = CATALOG_SOURCES
     existing_names = {
         row["name"] for row in connection.execute("SELECT name FROM products").fetchall()
     }
@@ -666,7 +647,10 @@ def seed_products(connection):
                 item["description"], style_label, country_label, tags, brand,
             ) if value
         )
-        image_alt = image_override.get("image_alt", item["name"])
+        image_alt = image_override.get(
+            "image_alt",
+            image_source.get("image_alt", item["name"]),
+        )
         if book_cover:
             image_credit_url = f"https://openlibrary.org/isbn/{book_cover[0]}"
             image_credit_text = "Open Library cover image"
@@ -843,3 +827,10 @@ PRODUCT_IMAGES = {
     "Sketch Pen Set": "/static/images/sketch-pens.svg",
     "Pencil Pouch": "/static/images/pencil-pouch.svg",
 }
+
+
+if __name__ == "__main__":
+    from database import DB_PATH, init_db
+
+    seeded_count = init_db()
+    print(f"Updated {seeded_count} products in {DB_PATH}")

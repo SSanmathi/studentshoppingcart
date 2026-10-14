@@ -231,7 +231,7 @@ class BackendIntegrationTests(unittest.TestCase):
         self.assertEqual(private_order.status_code, 302)
         self.assertIn("/orders", private_order.headers["Location"])
 
-    def test_seeded_product_images_are_unique_local_assets(self):
+    def test_seeded_product_images_are_unique_local_assets_or_unsplash_photos(self):
         connection = sqlite3.connect(self.database_path)
         rows = connection.execute(
             "SELECT name, image_url, image_alt FROM products ORDER BY id"
@@ -240,16 +240,31 @@ class BackendIntegrationTests(unittest.TestCase):
         root = os.path.dirname(os.path.dirname(__file__))
         paths = []
         for name, image_url, image_alt in rows:
-            self.assertTrue(image_url.startswith("/static/"), name)
-            local_path = os.path.join(
-                root,
-                unquote(image_url.lstrip("/")).replace("/", os.sep),
-            )
-            self.assertTrue(os.path.isfile(local_path), f"{name}: {image_url}")
+            if image_url.startswith("/static/"):
+                local_path = os.path.join(
+                    root,
+                    unquote(image_url.lstrip("/")).replace("/", os.sep),
+                )
+                self.assertTrue(os.path.isfile(local_path), f"{name}: {image_url}")
+            else:
+                self.assertRegex(
+                    image_url,
+                    r"^https://images\.unsplash\.com/photo-[^?]+\?auto=format&fit=crop&w=900&q=85$",
+                    name,
+                )
             self.assertTrue(image_alt.strip(), name)
             paths.append(image_url)
         self.assertEqual(len(paths), len(set(paths)))
         self.assertNotIn("/static/images/placeholder-product.svg", paths)
+
+        expected_product_images = {
+            "Gel Pen Pack": "/static/images/catalog/gel-pen-pack-unsplash.jpg",
+            "Highlighter Set": "/static/images/catalog/highlighter-set-unsplash.jpg",
+            "A4 Ruled Notebook": "/static/images/catalog/a4-ruled-notebook-unsplash.jpg",
+        }
+        images_by_name = {name: image_url for name, image_url, _ in rows}
+        for name, image_url in expected_product_images.items():
+            self.assertEqual(images_by_name[name], image_url)
 
         for fallback_name in (
             "stationery-image-fallback.svg",
@@ -259,9 +274,41 @@ class BackendIntegrationTests(unittest.TestCase):
             with self.client.get(f"/static/images/{fallback_name}") as response:
                 self.assertEqual(response.status_code, 200)
 
+    def test_public_landing_page_has_clean_header_and_category_photography(self):
+        response = student_cart.app.test_client().get("/")
+        self.assertEqual(response.status_code, 200)
+        for label in (b"Home", b"Products", b"Categories", b"Kit Planner", b"Cart", b"Create account", b"Log in"):
+            self.assertIn(label, response.data)
+        for label in (b"Default student budget", b"Personalize it anytime", b"Plan your shopping", b"Budget planner"):
+            self.assertNotIn(label, response.data)
+        self.assertEqual(response.data.count(b'class="category-card"'), 5)
+        self.assertIn(b"photo-1583485088034-697b5bc54ccd", response.data)
+        self.assertIn(b"photo-1497633762265-9d179a990aa6", response.data)
+
+    def test_product_listing_has_one_empty_state_and_accessible_filters(self):
+        connection = sqlite3.connect(self.database_path)
+        user_id = connection.execute(
+            """
+            INSERT INTO users (full_name, email, password_hash, college_name)
+            VALUES (?, ?, ?, ?)
+            """,
+            ("Listing Student", "listing@example.edu", "unused-test-hash", "Test College"),
+        ).lastrowid
+        connection.commit()
+        connection.close()
+        with self.client.session_transaction() as session:
+            session["user_id"] = user_id
+
+        response = self.client.get("/products")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data.count(b'id="no-products-found"'), 1)
+        self.assertNotIn(b'style="display: none;"', response.data)
+        self.assertIn(b'aria-label="Filter by category"', response.data)
+        self.assertIn(b'aria-label="Minimum price"', response.data)
+
     def test_login_rejects_bad_credentials_and_posts_require_csrf(self):
         home = self.client.get("/")
-        self.assertIn(b"public-navbar", home.data)
+        self.assertIn(b'class="navbar"', home.data)
         self.assertIn(b"site-footer", home.data)
 
         response = self.client.post(

@@ -2,7 +2,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const toasts = document.querySelectorAll('.toast');
     toasts.forEach((toast) => {
         setTimeout(() => {
-            toast.remove();
+            toast.classList.add('is-dismissing');
+            toast.addEventListener('transitionend', () => toast.remove(), { once: true });
+            setTimeout(() => toast.remove(), 450);
         }, 3200);
     });
 
@@ -11,6 +13,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const resultCount = document.getElementById('product-result-count');
     const productGrid = document.getElementById('product-grid');
     const emptyState = document.getElementById('no-products-found');
+    const filterForm = document.querySelector('.filter-form');
+    const minPriceInput = filterForm?.querySelector('input[name="min_price"]');
+    const maxPriceInput = filterForm?.querySelector('input[name="max_price"]');
+    const stockInput = filterForm?.querySelector('input[name="stock"]');
 
     if (productSearchInput && productGrid && resultCount) {
         const cards = Array.from(productGrid.querySelectorAll('.product-card'));
@@ -18,17 +24,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const applyFilter = () => {
             const query = productSearchInput.value.trim().toLowerCase();
             const priceMatch = query.match(/\bunder\s*₹?\s*(\d+(?:\.\d+)?)/);
-            const maxPrice = priceMatch ? Number(priceMatch[1]) : null;
             const textQuery = priceMatch
                 ? `${query.slice(0, priceMatch.index)} ${query.slice(priceMatch.index + priceMatch[0].length)}`.trim()
                 : query;
+            const enteredMaxPrice = maxPriceInput?.value.trim();
+            const maxPriceValues = [
+                priceMatch ? Number(priceMatch[1]) : null,
+                enteredMaxPrice ? Number(enteredMaxPrice) : null,
+            ].filter((price) => price !== null && Number.isFinite(price));
+            const maxFilterPrice = maxPriceValues.length ? Math.min(...maxPriceValues) : null;
+            const enteredMinPrice = minPriceInput?.value.trim();
+            const minFilterPrice = enteredMinPrice ? Number(enteredMinPrice) : null;
+            const onlyInStock = Boolean(stockInput?.checked);
             let visibleCards = 0;
 
             cards.forEach((card) => {
                 const searchableText = (card.dataset.search || card.textContent || '').toLowerCase();
                 const matchesText = !textQuery || searchableText.includes(textQuery);
-                const matchesPrice = maxPrice === null || Number(card.dataset.price) <= maxPrice;
-                const match = matchesText && matchesPrice;
+                const price = Number(card.dataset.price);
+                const matchesPrice = (maxFilterPrice === null || price <= maxFilterPrice)
+                    && (minFilterPrice === null || price >= minFilterPrice);
+                const matchesStock = !onlyInStock || Number(card.dataset.stock) > 0;
+                const match = matchesText && matchesPrice && matchesStock;
                 card.style.display = match ? '' : 'none';
                 if (match) {
                     visibleCards += 1;
@@ -37,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             resultCount.textContent = `${visibleCards} product${visibleCards === 1 ? '' : 's'}`;
             if (emptyState) {
-                emptyState.style.display = visibleCards === 0 ? 'block' : 'none';
+                emptyState.hidden = visibleCards !== 0;
             }
         };
         const clearSearch = () => {
@@ -55,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         productSearchInput.addEventListener('input', applyFilter);
+        [minPriceInput, maxPriceInput].forEach((input) => {
+            if (input) input.addEventListener('input', applyFilter);
+        });
         if (clearProductSearch) {
             clearProductSearch.addEventListener('click', clearSearch);
         }
@@ -65,6 +85,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         applyFilter();
     }
+
+    document.querySelectorAll('.filter-form').forEach((form) => {
+        form.querySelectorAll('select, input[name="stock"]').forEach((control) => {
+            control.addEventListener('change', () => {
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    form.submit();
+                }
+            });
+        });
+    });
 
     document.querySelectorAll('.global-search-input').forEach((searchInput) => {
         const searchContainer = searchInput.closest('.search-box, .global-search');

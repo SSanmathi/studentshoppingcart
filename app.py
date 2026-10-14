@@ -12,8 +12,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from database import DB_PATH, get_db_connection, init_db
 
-from catalog import find_products as search_catalog, index_products, unique_products
+from catalog import find_products as search_catalog, index_products
 from pricing import calculate_product_price
+from seed import CATEGORY_IMAGES
 from student_tools import (
     DEPARTMENTS,
     HOSTEL_CHECKLIST,
@@ -259,7 +260,12 @@ def get_recently_viewed_products(exclude_ids=()):
 def navigation_context():
     user_id = session.get("user_id")
     if user_id is None:
-        return {"cart_count": 0, "wishlist_count": 0, "wishlisted_product_ids": []}
+        return {
+            "cart_count": 0,
+            "wishlist_count": 0,
+            "wishlisted_product_ids": [],
+            "category_images": CATEGORY_IMAGES,
+        }
     counts = get_db().execute(
         """
         SELECT
@@ -275,7 +281,11 @@ def navigation_context():
             (user_id,),
         ).fetchall()
     ]
-    return {**dict(counts), "wishlisted_product_ids": wishlisted_product_ids}
+    return {
+        **dict(counts),
+        "wishlisted_product_ids": wishlisted_product_ids,
+        "category_images": CATEGORY_IMAGES,
+    }
 
 
 def get_cart_items(user_id):
@@ -1697,10 +1707,11 @@ if __name__ == "__main__":
             f"Warning: preserved legacy data has {len(integrity_issues)} "
             f"foreign-key issue(s) in {affected_tables}; no records were deleted."
         )
-    print("Local development server: http://127.0.0.1:5000")
+    port = int(os.environ.get("PORT", "5000"))
+    print(f"Local development server: http://127.0.0.1:{port}")
     app.run(
         host="127.0.0.1",
-        port=int(os.environ.get("PORT", "5000")),
+        port=port,
         debug=environment == "development",
         use_reloader=False,
     )

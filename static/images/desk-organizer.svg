@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="title desc">
-<title id="title">Desktop stationery organizer</title><desc id="desc">Illustration of a desk caddy with pens, a notebook, and divided storage compartments.</desc>
-<rect width="800" height="600" rx="32" fill="#edf6f5"/>
-<path d="M200 310h400l-30 185H230z" fill="#14b8a6" stroke="#0f766e" stroke-width="8"/>
-<path d="M265 308V185q0-18 18-18t18 18v123m70 0V145q0-18 18-18t18 18v163m70 0V190q0-18 18-18t18 18v118" fill="#fbbf24" stroke="#92400e" stroke-width="8"/>
-<path d="M275 385h90v110h-90zm125 0h90v110h-90zm125 0h50v110h-50z" fill="#ccfbf1" stroke="#0f766e" stroke-width="6"/>
-<path d="M215 520h370" stroke="#64748b" stroke-width="14" stroke-linecap="round"/>
-</svg>

@@ -1,0 +1,27 @@
+<section class="dashboard-categories catalog-section" id="categories" aria-labelledby="category-title">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Browse by need</span><h2 id="category-title">Shop student categories</h2></div>
+    </div>
+    <div class="category-grid">
+        <a href="{{ url_for('products', category='Stationery') }}" class="category-card">
+            <img src="{{ category_images.stationery.image_url }}" alt="{{ category_images.stationery.image_alt }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback('Stationery') }}';">
+            <span>Stationery</span><small>Everyday and international styles</small>
+        </a>
+        <a href="{{ url_for('products', category='Books') }}" class="category-card">
+            <img src="{{ category_images.books.image_url }}" alt="{{ category_images.books.image_alt }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback('Books') }}';">
+            <span>Books</span><small>Programming and study references</small>
+        </a>
+        <a href="{{ url_for('products', category='Hostel Essentials') }}" class="category-card">
+            <img src="{{ category_images.hostel.image_url }}" alt="{{ category_images.hostel.image_alt }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback('Hostel Essentials') }}';">
+            <span>Hostel Essentials</span><small>Room, personal care, and snacks</small>
+        </a>
+        <a href="{{ url_for('products', category='snacks') }}" class="category-card">
+            <img src="{{ category_images.snacks.image_url }}" alt="{{ category_images.snacks.image_alt }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback('Hostel Essentials') }}';">
+            <span>Snacks</span><small>Packaged student snacks</small>
+        </a>
+        <a href="{{ url_for('products', category='international') }}" class="category-card">
+            <img src="{{ category_images.international.image_url }}" alt="{{ category_images.international.image_alt }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback('Stationery') }}';">
+            <span>International Products</span><small>Country-inspired stationery</small>
+        </a>
+    </div>
+</section>

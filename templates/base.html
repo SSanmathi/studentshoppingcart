@@ -15,59 +15,35 @@
         {% if messages %}
             <div class="toast-stack">
                 {% for category, message in messages %}
-                    <div class="toast toast-{{ category }}">{{ message }}</div>
+                    <div class="toast toast-{{ category }}" role="{% if category == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
     {% endwith %}
 
-    {% if session.get('user_id') %}
-        <nav class="navbar">
-            <div class="nav-brand">
-                <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-shop"></i> Student Cart</a>
-            </div>
-            <form method="GET" action="{{ url_for('products') }}" class="nav-search global-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input class="global-search-input" type="search" name="q" placeholder="Search catalogue" autocomplete="off" aria-label="Search products">
-                <div class="search-suggestions" id="nav-search-suggestions" role="listbox"></div>
-            </form>
-            <div class="nav-links">
-                <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                <a href="{{ url_for('products') }}">Products</a>
-                <a href="{{ url_for('shopping_lists') }}">Lists</a>
-                <a href="{{ url_for('budget') }}">Budget</a>
-                <details class="nav-tools">
-                    <summary>Student tools</summary>
-                    <div class="nav-tools-menu">
-                        <a href="{{ url_for('kit_planner') }}">Smart Semester Kit</a>
-                        <a href="{{ url_for('hostel_move_in') }}">Hostel Move-In Planner</a>
-                        <a href="{{ url_for('budget_challenge') }}">Budget Challenge</a>
-                        <a href="{{ url_for('compare_products') }}">Compare Products</a>
-                    </div>
-                </details>
-                <a href="{{ url_for('orders') }}">Orders</a>
-                <a href="{{ url_for('profile') }}">Profile</a>
-            </div>
-            <div class="nav-actions">
-                <a class="wishlist-pill" href="{{ url_for('wishlist') }}"><i class="fa-regular fa-heart"></i> Wishlist <span>{{ wishlist_count }}</span></a>
-                <a class="cart-pill" href="{{ url_for('cart') }}"><i class="fa-solid fa-cart-shopping"></i> Cart <span>{{ cart_count if cart_count is defined else 0 }}</span></a>
+    <nav class="navbar" aria-label="Main navigation">
+        <div class="nav-brand">
+            <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}"><i class="fa-solid fa-shop" aria-hidden="true"></i> Student Cart</a>
+        </div>
+        <div class="nav-links">
+            <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}" {% if request.endpoint in ('home', 'dashboard') %}aria-current="page"{% endif %}>Home</a>
+            <a href="{{ url_for('products') }}" {% if request.endpoint in ('products', 'product_detail') %}aria-current="page"{% endif %}>Products</a>
+            <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}#categories">Categories</a>
+            <a href="{{ url_for('kit_planner') }}" {% if request.endpoint == 'kit_planner' %}aria-current="page"{% endif %}>Kit Planner</a>
+            <a class="cart-pill" href="{{ url_for('cart') }}" {% if request.endpoint in ('cart', 'checkout') %}aria-current="page"{% endif %}><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Cart <span>{{ cart_count }}</span></a>
+        </div>
+        <div class="nav-actions">
+            {% if session.get('user_id') %}
                 <form method="POST" action="{{ url_for('logout') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button class="logout-btn" type="submit">Logout</button>
+                    <button class="logout-btn" type="submit">Log out</button>
                 </form>
-            </div>
-        </nav>
-    {% else %}
-        <nav class="navbar public-navbar" aria-label="Main navigation">
-            <div class="nav-brand">
-                <a href="{{ url_for('home') }}"><i class="fa-solid fa-shop" aria-hidden="true"></i> Student Cart</a>
-            </div>
-            <div class="public-nav-actions">
-                <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Sign in</a>
+            {% else %}
                 <a class="primary-btn small-btn" href="{{ url_for('register') }}">Create account</a>
-            </div>
-        </nav>
-    {% endif %}
+                <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Log in</a>
+            {% endif %}
+        </div>
+    </nav>
 
     <main class="page-container">
         {% if session.get('user_id') %}

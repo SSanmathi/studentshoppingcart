@@ -1,4 +1,26 @@
 {
+  "_category_images": {
+    "stationery": {
+      "image_url": "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=600&q=80",
+      "image_alt": "Pens, markers, and notebooks arranged as student stationery."
+    },
+    "books": {
+      "image_url": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80",
+      "image_alt": "Books and study materials arranged on a clean desk."
+    },
+    "hostel": {
+      "image_url": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80",
+      "image_alt": "Modern student room with a desk and room essentials."
+    },
+    "snacks": {
+      "image_url": "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&w=600&q=80",
+      "image_alt": "Packaged snacks and treats for students."
+    },
+    "international": {
+      "image_url": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?auto=format&fit=crop&w=600&q=80",
+      "image_alt": "Colorful pens and stationery in a minimalist style."
+    }
+  },
   "Blue Ballpoint Pen": {
     "image_url": "/static/images/catalog/blue-ballpoint-pen.jpg",
     "image_alt": "Blue Ballpoint Pen ? photograph of Blue Ballpoint Pen.jpg",
@@ -7,11 +29,11 @@
     "source_page_id": 148181367
   },
   "Gel Pen Pack": {
-    "image_url": "/static/images/catalog/gel-pen-pack.jpg",
-    "image_alt": "Gel Pen Pack ? photograph of Gel pen unassembled.jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:Gel_pen_unassembled.jpg",
-    "source_title": "File:Gel pen unassembled.jpg",
-    "source_page_id": 17827200
+    "image_url": "/static/images/catalog/gel-pen-pack-unsplash.jpg",
+    "image_alt": "Assorted colorful pens arranged on a white background.",
+    "image_credit_url": "https://unsplash.com/photos/assorted-color-on-pens-on-white-background-h2QUaIqhK64",
+    "image_credit_text": "Unsplash photo",
+    "source_title": "Assorted-color pens on white background"
   },
   "HB Pencil Box": {
     "image_url": "/static/images/catalog/hb-pencil-box.jpg",
@@ -42,11 +64,11 @@
     "source_page_id": 21887941
   },
   "Highlighter Set": {
-    "image_url": "/static/images/catalog/highlighter-set.jpg",
-    "image_alt": "Highlighter Set ? photograph of A yellow highlighter marker..jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:A_yellow_highlighter_marker..jpg",
-    "source_title": "File:A yellow highlighter marker..jpg",
-    "source_page_id": 196960114
+    "image_url": "/static/images/catalog/highlighter-set-unsplash.jpg",
+    "image_alt": "Several colorful highlighters arranged on a gray surface.",
+    "image_credit_url": "https://unsplash.com/photos/several-colorful-highlighters-scattered-on-a-gray-surface-IcPus6bjgxE",
+    "image_credit_text": "Unsplash photo",
+    "source_title": "Several colorful highlighters scattered on a gray surface"
   },
   "Permanent Marker Pack": {
     "image_url": "/static/images/catalog/permanent-marker-pack.jpg",
@@ -70,11 +92,11 @@
     "source_page_id": 101287177
   },
   "A4 Ruled Notebook": {
-    "image_url": "/static/images/catalog/a4-ruled-notebook.jpg",
-    "image_alt": "A4 Ruled Notebook ? photograph of Moleskine ruled notebook, inside view.jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:Moleskine_ruled_notebook,_inside_view.jpg",
-    "source_title": "File:Moleskine ruled notebook, inside view.jpg",
-    "source_page_id": 90108
+    "image_url": "/static/images/catalog/a4-ruled-notebook-unsplash.jpg",
+    "image_alt": "Open ruled notebook and a ballpoint pen on a white background.",
+    "image_credit_url": "https://unsplash.com/photos/notebook-and-pen-on-white-IZj7vckPGiw",
+    "image_credit_text": "Unsplash photo",
+    "source_title": "Open ruled notebook and pen on white background"
   },
   "Long Notebook 200 Pages": {
     "image_url": "/static/images/catalog/long-notebook-200-pages.jpg",
@@ -392,37 +414,34 @@
     "creator": null
   },
   "Chart Paper Pack": {
-    "image_url": "/static/images/catalog/chart-paper-pack.jpg",
-    "image_alt": "Chart Paper Pack ? photograph of Portrait of Galka Scheyer, by Beatrice Wood, 1934, colored pencil on paper - Norton Simon Museum - Pasadena, CA - DSC03153.jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:Portrait_of_Galka_Scheyer,_by_Beatrice_Wood,_1934,_colored_pencil_on_paper_-_Norton_Simon_Museum_-_Pasadena,_CA_-_DSC03153.jpg",
-    "image_credit_text": "File:Portrait of Galka Scheyer, by Beatrice Wood, 1934, colored pencil on paper - Norton Simon Museum - Pasadena, CA - DSC03153.jpg (Wikimedia Commons)",
-    "source_title": "File:Portrait of Galka Scheyer, by Beatrice Wood, 1934, colored pencil on paper - Norton Simon Museum - Pasadena, CA - DSC03153.jpg",
-    "source_page_id": 197827439,
-    "source_provider": "commons",
-    "license": null,
+    "image_url": "https://images.unsplash.com/photo-1527239441953-caffd968d952?auto=format&fit=crop&w=900&q=85",
+    "image_alt": "White and blue sheets of paper, suitable for a chart-paper pack.",
+    "image_credit_url": "https://unsplash.com/s/photos/colored-paper-sheets",
+    "image_credit_text": "Unsplash · free-to-use photo",
+    "source_title": "White and blue paper",
+    "source_provider": "unsplash",
+    "license": "Unsplash License",
     "creator": null
   },
   "Craft Paper Pack": {
-    "image_url": "/static/images/catalog/craft-paper-pack.jpg",
-    "image_alt": "Craft Paper Pack ? photograph of Coast, harbor, intracoastal waterway, and small-craft charts - compiled from U. S. Coast and Geodetic Survey (IA dr coast-harbor-intracoastal-waterway-and-small-craft-charts-compiled-fro-14359221).jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:Coast,_harbor,_intracoastal_waterway,_and_small-craft_charts_-_compiled_from_U._S._Coast_and_Geodetic_Survey_(IA_dr_coast-harbor-intracoastal-waterway-and-small-craft-charts-compiled-fro-14359221).jpg",
-    "image_credit_text": "File:Coast, harbor, intracoastal waterway, and small-craft charts - compiled from U. S. Coast and Geodetic Survey (IA dr coast-harbor-intracoastal-waterway-and-small-craft-charts-compiled-fro-14359221).jpg (Wikimedia Commons)",
-    "source_title": "File:Coast, harbor, intracoastal waterway, and small-craft charts - compiled from U. S. Coast and Geodetic Survey (IA dr coast-harbor-intracoastal-waterway-and-small-craft-charts-compiled-fro-14359221).jpg",
-    "source_page_id": 194509111,
-    "source_provider": "commons",
-    "license": null,
+    "image_url": "https://images.unsplash.com/photo-1527769929977-c341ee9f2033?auto=format&fit=crop&w=900&q=85",
+    "image_alt": "A close-up of sheets of paper in several colors, suitable for craft paper.",
+    "image_credit_url": "https://unsplash.com/s/photos/colored-paper-sheets",
+    "image_credit_text": "Unsplash · free-to-use photo",
+    "source_title": "Colorful sheets of paper",
+    "source_provider": "unsplash",
+    "license": "Unsplash License",
     "creator": null
   },
   "Project Board": {
-    "image_url": "/static/images/catalog/project-board.jpg",
-    "image_alt": "Project Board ? photograph of Overview of Insulated Siding",
-    "image_credit_url": "https://www.flickr.com/photos/145792862@N07/30179738422",
-    "image_credit_text": "\"Overview of Insulated Siding\" by margretc.hernandez is licensed under CC BY-SA 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by-sa/2.0/.",
-    "source_title": "Overview of Insulated Siding",
-    "source_page_id": "96f327c4-da91-4110-8574-3c5f93297f1c",
-    "source_provider": "openverse",
-    "license": "by-sa",
-    "creator": "margretc.hernandez"
+    "image_url": "https://images.unsplash.com/photo-1643249960396-d39d2a63ce8a?auto=format&fit=crop&w=900&q=85",
+    "image_alt": "A bulletin board covered with papers and pictures, suitable for a student project display.",
+    "image_credit_url": "https://unsplash.com/s/photos/school-project-board",
+    "image_credit_text": "Unsplash · free-to-use photo",
+    "source_title": "Bulletin board covered with papers and pictures",
+    "source_provider": "unsplash",
+    "license": "Unsplash License",
+    "creator": null
   },
   "Bedsheet - Single": {
     "image_url": "/static/images/catalog/bedsheet-single.jpg",
@@ -436,14 +455,13 @@
     "creator": null
   },
   "Pillow Cover Pair": {
-    "image_url": "/static/images/catalog/pillow-cover-pair.jpg",
-    "image_alt": "Pillow Cover Pair ? photograph of Pillow Cover (Italy), 16th century (CH 18382599).jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:Pillow_Cover_(Italy),_16th_century_(CH_18382599).jpg",
-    "image_credit_text": "File:Pillow Cover (Italy), 16th century (CH 18382599).jpg (Wikimedia Commons)",
-    "source_title": "File:Pillow Cover (Italy), 16th century (CH 18382599).jpg",
-    "source_page_id": 64375101,
-    "source_provider": "commons",
-    "license": null,
+    "image_url": "https://images.unsplash.com/photo-1620751852890-a89137ec78b9?auto=format&fit=crop&w=900&q=85",
+    "image_alt": "A white bed pillow on a bed, illustrating a pair of pillow covers.",
+    "image_credit_url": "https://unsplash.com/s/photos/pillow-cover-bed",
+    "image_credit_text": "Unsplash · free-to-use photo",
+    "source_title": "White bed pillow on bed",
+    "source_provider": "unsplash",
+    "license": "Unsplash License",
     "creator": null
   },
   "Standard Bed Pillow": {
@@ -535,25 +553,23 @@
     "creator": null
   },
   "Over-door Shoe Organizer": {
-    "image_url": "/static/images/catalog/over-door-shoe-organizer.jpg",
-    "image_alt": "Over-door Shoe Organizer ? photograph of London Bankside - March 2010 - Clink - Reminder of Schooldays",
-    "image_credit_url": "https://www.flickr.com/photos/40837632@N05/4448023325",
-    "image_credit_text": "\"London Bankside - March 2010 - Clink - Reminder of Schooldays\" by Gareth1953 All Right Now is licensed under CC BY 2.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/2.0/.",
-    "source_title": "London Bankside - March 2010 - Clink - Reminder of Schooldays",
-    "source_page_id": "9369f21c-4f40-4ca0-bc28-cfe3d0804e2c",
-    "source_provider": "openverse",
-    "license": "by",
-    "creator": "Gareth1953 All Right Now"
+    "image_url": "https://images.unsplash.com/photo-1747151826624-6a12b3964be1?auto=format&fit=crop&w=900&q=85",
+    "image_alt": "A yellow organizer holding shoes and small personal items.",
+    "image_credit_url": "https://unsplash.com/s/photos/hanging-shoe-organizer",
+    "image_credit_text": "Unsplash · free-to-use photo",
+    "source_title": "Yellow organizer holding shoes and personal items",
+    "source_provider": "unsplash",
+    "license": "Unsplash License",
+    "creator": null
   },
   "Desk Organizer": {
-    "image_url": "/static/images/catalog/desk-organizer.jpg",
-    "image_alt": "Desk Organizer ? photograph of Drawing, Design for Desk Organizer with Stationery, 1900–05 (CH 18684169).jpg",
-    "image_credit_url": "https://commons.wikimedia.org/wiki/File:Drawing,_Design_for_Desk_Organizer_with_Stationery,_1900%E2%80%9305_(CH_18684169).jpg",
-    "image_credit_text": "File:Drawing, Design for Desk Organizer with Stationery, 1900–05 (CH 18684169).jpg (Wikimedia Commons)",
-    "source_title": "File:Drawing, Design for Desk Organizer with Stationery, 1900–05 (CH 18684169).jpg",
-    "source_page_id": 64772545,
-    "source_provider": "commons",
-    "license": null,
+    "image_url": "https://images.unsplash.com/photo-1707413463619-8f4926d225ba?auto=format&fit=crop&w=900&q=85",
+    "image_alt": "A desk with office supplies arranged together, illustrating a student desk organizer.",
+    "image_credit_url": "https://unsplash.com/s/photos/desk-organizer-stationery",
+    "image_credit_text": "Unsplash · free-to-use photo",
+    "source_title": "A desk topped with office supplies",
+    "source_provider": "unsplash",
+    "license": "Unsplash License",
     "creator": null
   }
 }

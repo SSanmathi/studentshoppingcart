@@ -1,4 +1,4 @@
-<article class="product-card" data-price="{{ product.price }}" data-search="{{ product.name }} {{ product.category }} {{ product.description }} {{ product.search_tags }} {{ product.country_label }} {{ product.style_label }}">
+<article class="product-card" data-price="{{ product.effective_price }}" data-stock="{{ product.stock }}" data-search="{{ product.name }} {{ product.category }} {{ product.description }} {{ product.search_tags }} {{ product.country_label }} {{ product.style_label }}">
     <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-image-link">
         <img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='{{ product_image_fallback(product.category) }}';this.alt=this.alt+' (category illustration)';">
     </a>

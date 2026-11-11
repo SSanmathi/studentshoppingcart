@@ -1,0 +1,33 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Admin Login | Student Cart{% endblock %}
+
+{% block auth_content %}
+<section class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-header">
+            <span class="eyebrow">Administrator access</span>
+            <h1>Admin Login</h1>
+            <p>Sign in to manage products, orders, and sales.</p>
+        </div>
+        <form method="POST" class="auth-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="input-group">
+                <label for="email">Admin Email</label>
+                <input type="email" id="email" name="email" required autocomplete="username">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="primary-btn block-btn">Login as Admin</button>
+        </form>
+        {% if admin_count == 0 %}
+            <p class="admin-auth-links">New administrator? <a href="{{ url_for('admin_signup') }}">Create Admin Account</a></p>
+        {% else %}
+            <p class="admin-auth-closed">An administrator account already exists. Public signup is disabled; signed-in administrators can add accounts from Admin Accounts.</p>
+        {% endif %}
+        <p class="admin-auth-back"><a href="{{ url_for('home') }}">Back to Student Shopping Cart</a></p>
+    </div>
+</section>
+{% endblock %}

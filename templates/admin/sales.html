@@ -1,0 +1,32 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Sales Overview | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div><span class="eyebrow">Store performance</span><h1>Sales Overview</h1><p>Figures summarize the demo order records; cancelled orders are excluded.</p></div>
+</section>
+<section class="admin-stat-grid">
+    <article class="admin-stat-card"><span>Orders</span><strong>{{ totals.order_count }}</strong><i class="fa-solid fa-receipt"></i></article>
+    <article class="admin-stat-card"><span>Recorded Sales</span><strong>₹{{ '%.2f'|format(totals.sales_total) }}</strong><i class="fa-solid fa-indian-rupee-sign"></i></article>
+    <article class="admin-stat-card"><span>Average Order</span><strong>₹{{ '%.2f'|format(totals.average_order) }}</strong><i class="fa-solid fa-chart-simple"></i></article>
+</section>
+<section class="panel admin-table-panel">
+    <div class="panel-header"><h2>Monthly Summary</h2></div>
+    {% if monthly_sales %}
+    <div class="admin-table-scroll"><table class="admin-table">
+        <thead><tr><th>Month</th><th>Orders</th><th>Recorded sales</th></tr></thead>
+        <tbody>{% for row in monthly_sales %}<tr><td>{{ row.month }}</td><td>{{ row.order_count }}</td><td>₹{{ '%.2f'|format(row.sales_total) }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="muted-note">No sales data is available yet.</p>{% endif %}
+</section>
+<section class="panel admin-table-panel">
+    <div class="panel-header"><h2>Popular Products</h2></div>
+    {% if popular_products %}
+    <div class="admin-table-scroll"><table class="admin-table">
+        <thead><tr><th>Product</th><th>Units</th><th>Recorded sales</th></tr></thead>
+        <tbody>{% for product in popular_products %}<tr><td>{{ product.product_name }}</td><td>{{ product.units_sold }}</td><td>₹{{ '%.2f'|format(product.sales_total) }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="muted-note">Products will appear after students place orders.</p>{% endif %}
+</section>
+{% endblock %}

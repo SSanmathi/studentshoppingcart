@@ -30,6 +30,9 @@ Student Cart is a full-stack Flask application for college students to browse pr
 - Hostel Move-In Planner marks owned items, estimates missing essentials, and adds selections to the cart
 - Student Budget Challenge builds purpose-based catalogue baskets that remain within a chosen limit
 - Product comparison displays two or three real catalogue listings side by side
+- Separate administrator login with CLI-provisioned first account and admin-only account creation
+- Admin dashboard for product management, order status, profile, and demo sales summaries
+- Admin product uploads with type/size checks; active products publish immediately to the student catalogue
 
 ## Project structure
 - app.py – Flask routes and business logic
@@ -53,6 +56,30 @@ Student Cart is a full-stack Flask application for college students to browse pr
 5. Open the browser at http://127.0.0.1:5000
 
 For persistent login sessions across server restarts, set `STUDENT_CART_SECRET_KEY` to a stable random value before running the app. Without it, local development generates a temporary secret at startup.
+
+## Admin demonstration
+
+When the `admins` table is empty, the first administrator can sign up at **http://127.0.0.1:5000/admin/signup** without a registration code. This public signup closes automatically after the first account is created. If preferred, create the first admin from the project folder using the local setup command, which asks for account details and a hidden password:
+
+```powershell
+flask --app app create-admin
+```
+
+If you forget the admin password, reset it from the project folder in a trusted local terminal. Enter the admin email and choose a new password when prompted:
+
+```powershell
+flask --app app reset-admin-password
+```
+
+The password prompt is hidden. The reset command only updates an existing administrator; it does not reopen public signup.
+
+Start the website with `python app.py`, then sign in at **http://127.0.0.1:5000/admin/login**. After the first account exists, only a signed-in administrator can create additional accounts from **Admin Accounts** in the sidebar. Student accounts cannot register as administrators. Admin and student identities use separate database records and separate session keys. Role-protected routes check the active view and authenticated identity.
+
+Use the **Switch to Student View** and **Switch to Admin View** buttons in the navigation. View changes are POST requests protected by CSRF validation. If an admin is not signed in, switching to Admin View opens Admin Login. Student accounts cannot open admin routes. Logging out removes the active role's identity and keeps the other identity available when one is signed in. Admin passwords are hashed.
+
+The admin dashboard includes product counts, recent products and orders, product add/edit/deactivate/delete, order status updates, demo sales summaries, and profile settings. Uploaded product images are limited to JPG, PNG, or WebP files up to 3 MB and are saved under the ignored `static/uploads/products/` directory. Active products appear automatically in the student catalogue; inactive products are hidden from student shopping and API routes. Products with order history cannot be deleted, preserving order records; deactivate those products instead. Cancelling an order restores its reserved stock once, and cancelled/completed orders are final.
+
+The existing `users` table remains the student-account table and `cart_items` remains the student cart table. These names are retained for compatibility with the developed student features; admin accounts are stored separately in `admins`.
 
 ## Default login
 Use the registration page to create a new student account. The app creates a monthly budget automatically on first sign-up.
@@ -97,6 +124,7 @@ The schema contains:
 | Table | Purpose |
 | --- | --- |
 | `users` | Student name, unique email, password hash, college, department |
+| `admins` | Separate admin identity, phone number, and password hash |
 | `products` | Product catalogue, prices, stock, images, and specifications |
 | `cart_items` | One quantity row per user/product |
 | `orders` | User-owned order totals, payment method, delivery, and status |
@@ -120,5 +148,6 @@ The browser sends HTTP requests to Flask routes; Flask validates the session and
 ## Notes
 - The app uses demo payment methods only; no real card data is collected.
 - Stock is reduced only after a successful order.
+- Orders and sales figures are for project demonstration only; no online payment is performed.
 - Each student sees their own cart, orders, budget, and lists.
 - Default budget is ₹2,000 and can be changed or reset at any time.

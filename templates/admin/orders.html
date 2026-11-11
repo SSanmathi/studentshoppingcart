@@ -1,0 +1,40 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manage Orders | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div><span class="eyebrow">Student requests</span><h1>Manage Orders</h1><p>Review student orders and update their fulfilment status. No real payments are processed.</p></div>
+</section>
+<section class="panel admin-table-panel">
+    {% if orders %}
+    <div class="admin-table-scroll">
+        <table class="admin-table">
+            <thead><tr><th>Order</th><th>Student</th><th>Date</th><th>Order items</th><th>Total</th><th>Status</th><th>Update status</th></tr></thead>
+            <tbody>{% for order in orders %}
+                <tr>
+                    <td><strong>{{ order.order_id }}</strong></td>
+                    <td>{{ order.student_name }}<small class="table-subtext">{{ order.student_email }}</small></td>
+                    <td>{{ order.created_at }}</td><td>{{ order.items_summary or 'No items recorded' }}</td>
+                    <td>₹{{ '%.2f'|format(order.total_amount) }}</td>
+                    <td><span class="admin-status status-{{ order.order_status|lower }}">{{ order.order_status }}</span></td>
+                    <td>
+                        {% if order.order_status not in ('Completed', 'Cancelled') %}
+                        <form method="POST" action="{{ url_for('admin_update_order_status', order_id=order.id) }}" class="status-update-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="status" aria-label="New status for {{ order.order_id }}">
+                                {% for status in ('Pending', 'Confirmed', 'Completed', 'Cancelled') %}
+                                <option value="{{ status }}" {% if order.order_status == status %}selected{% endif %}>{{ status }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="secondary-btn small-btn" type="submit">Update</button>
+                        </form>
+                        {% else %}<span class="muted-note">Final status</span>{% endif %}
+                    </td>
+                </tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<div class="empty-state"><h2>No orders yet</h2><p>Student purchase requests will appear here.</p></div>{% endif %}
+</section>
+{% endblock %}

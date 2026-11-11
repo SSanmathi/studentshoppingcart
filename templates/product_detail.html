@@ -25,10 +25,10 @@
         {% if product.subcategory %}<p class="detail-subcategory">Product type: {{ product.subcategory }}</p>{% endif %}
         <div class="price-row">
             <strong>₹{{ '%.2f'|format(product.effective_price) }}</strong>
-            {% if product.applied_offer %}
-                <span class="original-price">₹{{ '%.2f'|format(product.list_price) }}</span>
-                <span class="discount-badge">{{ '%.2f'|format(product.discount_percentage) }}% OFF</span>
-                <small>Save ₹{{ '%.2f'|format(product.discount_amount) }} at quantity 1</small>
+            {% if product.display_original_price %}
+                <span class="original-price">₹{{ '%.2f'|format(product.display_original_price) }}</span>
+                <span class="discount-badge">{{ '%.2f'|format(product.display_discount_percentage) }}% OFF</span>
+                <small>Save ₹{{ '%.2f'|format(product.display_original_price - product.effective_price) }} at quantity 1</small>
             {% endif %}
         </div>
         {% if product.available_offers %}

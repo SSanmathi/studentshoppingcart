@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin | Student Cart{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="admin-body">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="toast-stack">
+                {% for category, message in messages %}
+                    <div class="toast toast-{{ category }}" role="{% if category == 'error' %}alert{% else %}status{% endif %}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <header class="admin-topbar">
+        <a class="admin-brand" href="{{ url_for('admin_dashboard') if admin else url_for('admin_login') }}">
+            <i class="fa-solid fa-shop" aria-hidden="true"></i> Student Cart <span>Admin</span>
+        </a>
+        {% if admin %}
+            <div class="admin-top-actions">
+                <span>{{ admin.full_name }}</span>
+                <form method="POST" action="{{ url_for('switch_view') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="target" value="student">
+                    <button class="view-switch-btn" type="submit"><i class="fa-solid fa-store" aria-hidden="true"></i> Switch to Student View</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="admin-top-actions">
+                <a class="secondary-btn small-btn" href="{{ url_for('home') }}">Back to Student Website</a>
+                <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Student login</a>
+            </div>
+        {% endif %}
+    </header>
+    {% if admin %}
+        <div class="admin-shell">
+            <aside class="admin-sidebar" aria-label="Admin navigation">
+                <span class="eyebrow">Management</span>
+                <a href="{{ url_for('admin_dashboard') }}" {% if request.endpoint == 'admin_dashboard' %}aria-current="page"{% endif %}><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="{{ url_for('admin_add_product') }}" {% if request.endpoint == 'admin_add_product' %}aria-current="page"{% endif %}><i class="fa-solid fa-plus"></i> Add Product</a>
+                <a href="{{ url_for('admin_products') }}" {% if request.endpoint in ('admin_products', 'admin_edit_product') %}aria-current="page"{% endif %}><i class="fa-solid fa-boxes-stacked"></i> Manage Products</a>
+                <a href="{{ url_for('admin_categories') }}" {% if request.endpoint == 'admin_categories' %}aria-current="page"{% endif %}><i class="fa-solid fa-tags"></i> Categories</a>
+                <a href="{{ url_for('admin_orders') }}" {% if request.endpoint in ('admin_orders', 'admin_update_order_status') %}aria-current="page"{% endif %}><i class="fa-solid fa-receipt"></i> Manage Orders</a>
+                <a href="{{ url_for('admin_sales') }}" {% if request.endpoint == 'admin_sales' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-line"></i> Sales Overview</a>
+                <a href="{{ url_for('admin_profile') }}" {% if request.endpoint == 'admin_profile' %}aria-current="page"{% endif %}><i class="fa-solid fa-user-gear"></i> My Profile</a>
+                <a href="{{ url_for('admin_signup') }}" {% if request.endpoint == 'admin_signup' %}aria-current="page"{% endif %}><i class="fa-solid fa-user-plus"></i> Admin Accounts</a>
+                <form method="POST" action="{{ url_for('admin_logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="admin-sidebar-logout" type="submit"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                </form>
+            </aside>
+            <main class="admin-main">{% block content %}{% endblock %}</main>
+        </div>
+    {% else %}
+        <main class="admin-auth-main">{% block auth_content %}{% endblock %}</main>
+    {% endif %}
+    <script>
+        document.querySelectorAll("[data-toggle-password]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const field = document.getElementById(button.dataset.togglePassword);
+                if (!field) return;
+                const showPassword = field.type === "password";
+                field.type = showPassword ? "text" : "password";
+                button.textContent = showPassword ? "Hide" : "Show";
+                button.setAttribute("aria-pressed", String(showPassword));
+                const fieldLabel = field.labels && field.labels.length
+                    ? field.labels[0].textContent
+                    : "password";
+                button.setAttribute(
+                    "aria-label",
+                    `${showPassword ? "Hide" : "Show"} ${fieldLabel}`
+                );
+            });
+        });
+    </script>
+</body>
+</html>

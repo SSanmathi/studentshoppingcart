@@ -1,0 +1,34 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ product.name }} | Product Preview{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div>
+        <span class="eyebrow">Product preview</span>
+        <h1>{{ product.name }}</h1>
+        <p>Review the saved catalogue information and student-facing image.</p>
+    </div>
+    <div class="admin-heading-actions">
+        <a class="secondary-btn" href="{{ url_for('admin_products') }}">Back to products</a>
+        <a class="primary-btn" href="{{ url_for('admin_edit_product', product_id=product.id) }}">Edit product</a>
+    </div>
+</section>
+
+<section class="panel admin-product-preview">
+    <img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="{{ product.image_alt or product.name }}">
+    <div>
+        <span class="admin-status {% if product.is_active %}status-active{% else %}status-inactive{% endif %}">{{ 'Active' if product.is_active else 'Inactive' }}</span>
+        <p class="eyebrow">{{ product.category }}</p>
+        <h2>{{ product.name }}</h2>
+        <p>{{ product.description }}</p>
+        <p class="admin-preview-price">
+            <strong>₹{{ '%.2f'|format(product.price) }}</strong>
+            {% if product.original_price and product.original_price > product.price %}
+            <del>₹{{ '%.2f'|format(product.original_price) }}</del>
+            {% endif %}
+        </p>
+        <p>Stock available: <strong>{{ product.stock }}</strong></p>
+    </div>
+</section>
+{% endblock %}

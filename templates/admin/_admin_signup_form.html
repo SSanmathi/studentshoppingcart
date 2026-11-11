@@ -1,0 +1,50 @@
+<section class="auth-shell admin-signup-shell">
+    <div class="auth-card large-card admin-auth-card">
+        <div class="auth-header">
+            <span class="eyebrow">Administrator access</span>
+            <h1>Create Admin Account</h1>
+            {% if admin %}
+                <p>Add another administrator to manage the store.</p>
+            {% else %}
+                <p>Create the first administrator account for this store.</p>
+            {% endif %}
+        </div>
+        <form method="POST" class="auth-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="input-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" maxlength="100" required autocomplete="name" value="{{ request.form.get('name', '') }}">
+            </div>
+            <div class="input-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" maxlength="254" required autocomplete="email" value="{{ request.form.get('email', '') }}">
+            </div>
+            <div class="input-group">
+                <label for="phone">Phone number <span class="muted-note">(optional)</span></label>
+                <input type="tel" id="phone" name="phone" maxlength="20" autocomplete="tel" value="{{ request.form.get('phone', '') }}">
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="password" name="password" minlength="8" required autocomplete="new-password">
+                        <button class="password-toggle" type="button" data-toggle-password="password" aria-label="Show password" aria-pressed="false">Show</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="confirm_password">Confirm password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="confirm_password" name="confirm_password" minlength="8" required autocomplete="new-password">
+                        <button class="password-toggle" type="button" data-toggle-password="confirm_password" aria-label="Show confirm password" aria-pressed="false">Show</button>
+                    </div>
+                </div>
+            </div>
+            <p class="admin-password-note">Use at least 8 characters for your password.</p>
+            <button type="submit" class="primary-btn block-btn">Create Admin Account</button>
+        </form>
+        <div class="admin-auth-links">
+            <p>Already have an account? <a href="{{ url_for('admin_login') }}">Admin Login</a></p>
+            <a href="{{ url_for('home') }}">Back to Student Shopping Cart</a>
+        </div>
+    </div>
+</section>

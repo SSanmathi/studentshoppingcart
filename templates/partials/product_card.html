@@ -16,9 +16,9 @@
         <h3>{{ product.name }}</h3>
         <div class="price-line">
             <strong>₹{{ '%.2f'|format(product.effective_price) }}</strong>
-            {% if product.applied_offer %}
-                <span class="original-price">₹{{ '%.2f'|format(product.list_price) }}</span>
-                <span class="discount-badge">{{ '%.2f'|format(product.discount_percentage) }}% OFF</span>
+            {% if product.display_original_price %}
+                <span class="original-price">₹{{ '%.2f'|format(product.display_original_price) }}</span>
+                <span class="discount-badge">{{ '%.2f'|format(product.display_discount_percentage) }}% OFF</span>
             {% endif %}
         </div>
         {% if product.available_offers %}

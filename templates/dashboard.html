@@ -50,6 +50,34 @@
 
 {% include 'partials/category_cards.html' %}
 
+<section class="catalog-section" id="latest-products">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Just added</span><h2>Latest Products</h2></div>
+        <a href="{{ url_for('products', sort='name') }}" class="text-link">Browse products</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in latest_products %}
+            {% include 'partials/product_card.html' %}
+        {% else %}
+            <p class="muted-note">New products will appear here.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="catalog-section" id="special-offers">
+    <div class="panel-header section-heading">
+        <div><span class="eyebrow">Good value</span><h2>Special Offers</h2></div>
+        <a href="{{ url_for('products') }}" class="text-link">Explore all</a>
+    </div>
+    <div class="product-grid catalog-grid">
+        {% for product in special_offers %}
+            {% include 'partials/product_card.html' %}
+        {% else %}
+            <p class="muted-note">There are no special offers right now.</p>
+        {% endfor %}
+    </div>
+</section>
+
 {% if low_stock_products %}
 <section class="catalog-section">
     <div class="panel-header section-heading">

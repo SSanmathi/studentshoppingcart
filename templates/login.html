@@ -22,7 +22,10 @@
             </div>
             <button type="submit" class="primary-btn block-btn">Sign in</button>
         </form>
-        <p class="auth-switch">New to Student Cart? <a href="{{ url_for('register') }}">Create an account</a></p>
+        <div class="auth-role-links">
+            <div><strong>STUDENT</strong><span>New to Student Cart? <a href="{{ url_for('register') }}">Student Signup</a></span></div>
+            <div><strong>ADMIN</strong><span>Administrator? <a href="{{ url_for('admin_login') }}">Admin Login</a></span></div>
+        </div>
     </div>
 </section>
 {% endblock %}

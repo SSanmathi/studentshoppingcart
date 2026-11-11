@@ -1,0 +1,63 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ 'Edit Product' if product else 'Add Product' }} | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div><span class="eyebrow">Catalogue</span><h1>{{ 'Edit Product' if product else 'Add Product' }}</h1><p>Products marked active are shown in the student catalogue.</p></div>
+    <a class="secondary-btn" href="{{ url_for('admin_products') }}">Back to products</a>
+</section>
+<section class="panel admin-form-panel">
+    <form method="POST" enctype="multipart/form-data" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="input-group">
+            <label for="name">Product name</label>
+            <input type="text" id="name" name="name" maxlength="120" required value="{{ form_values.get('name', product.name if product else '') }}">
+        </div>
+        <div class="input-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="5" maxlength="2000" required>{{ form_values.get('description', product.description if product else '') }}</textarea>
+        </div>
+        <div class="admin-form-grid">
+            <div class="input-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" required>
+                    {% for category in categories %}
+                    <option value="{{ category }}" {% if form_values.get('category', product.category if product else '') == category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="status">Product status</label>
+                {% set selected_status = form_values.get('status', ('active' if product and product.is_active else 'inactive') if product else 'active') %}
+                <select id="status" name="status" required>
+                    <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="original_price">Original price (₹)</label>
+                <input type="number" id="original_price" name="original_price" min="0.01" max="100000000" step="0.01" required value="{{ form_values.get('original_price', product.original_price if product and product.original_price else product.price if product else '') }}">
+            </div>
+            <div class="input-group">
+                <label for="discount_price">Discount price (₹)</label>
+                <input type="number" id="discount_price" name="discount_price" min="0.01" max="100000000" step="0.01" required value="{{ form_values.get('discount_price', product.price if product else '') }}">
+            </div>
+            <div class="input-group">
+                <label for="stock">Available stock</label>
+                <input type="number" id="stock" name="stock" min="0" max="1000000" step="1" required value="{{ form_values.get('stock', product.stock if product else '0') }}">
+            </div>
+            <div class="input-group">
+                <label for="product_image">Product image {% if not product %}<span class="required-note">(required)</span>{% else %}<span class="required-note">(optional; JPG, PNG, WebP up to 3 MB)</span>{% endif %}</label>
+                <input type="file" id="product_image" name="product_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" {% if not product %}required{% endif %}>
+                {% if product and product.image_url %}<img class="admin-form-preview" src="{{ product.image_url }}" alt="Current image for {{ product.name }}">{% endif %}
+            </div>
+        </div>
+        <div class="admin-form-actions">
+            <button class="primary-btn" type="submit">{{ 'Save changes' if product else 'Add product' }}</button>
+            {% if not product %}<button class="secondary-btn" type="reset">Clear form</button>{% endif %}
+            <a class="secondary-btn" href="{{ url_for('admin_dashboard') }}">Back to dashboard</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

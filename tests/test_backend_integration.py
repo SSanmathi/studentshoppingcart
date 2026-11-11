@@ -277,13 +277,36 @@ class BackendIntegrationTests(unittest.TestCase):
     def test_public_landing_page_has_clean_header_and_category_photography(self):
         response = student_cart.app.test_client().get("/")
         self.assertEqual(response.status_code, 200)
-        for label in (b"Home", b"Products", b"Categories", b"Kit Planner", b"Cart", b"Create account", b"Log in"):
+        for label in (
+            b"Home",
+            b"Products",
+            b"Categories",
+            b"Kit Planner",
+            b"Cart",
+            b"Create account",
+            b"Log in",
+            b"Admin Login",
+        ):
             self.assertIn(label, response.data)
         for label in (b"Default student budget", b"Personalize it anytime", b"Plan your shopping", b"Budget planner"):
             self.assertNotIn(label, response.data)
         self.assertEqual(response.data.count(b'class="category-card"'), 5)
         self.assertIn(b"photo-1583485088034-697b5bc54ccd", response.data)
         self.assertIn(b"photo-1497633762265-9d179a990aa6", response.data)
+
+    def test_student_login_and_signup_pages_link_to_admin_login(self):
+        for path in ("/login", "/register"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(b"Admin Login", response.data)
+                self.assertIn(b'href="/admin/login"', response.data)
+
+        admin_login = self.client.get("/admin/login")
+        self.assertEqual(admin_login.status_code, 200)
+        self.assertIn(b"Admin Email", admin_login.data)
+        self.assertIn(b"Login as Admin", admin_login.data)
+        self.assertNotIn(b"Create an admin account", admin_login.data)
 
     def test_product_listing_has_one_empty_state_and_accessible_filters(self):
         connection = sqlite3.connect(self.database_path)

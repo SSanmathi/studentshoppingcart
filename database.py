@@ -9,6 +9,8 @@ SCHEMA_PATH = os.path.join(BASE_DIR, "schema.sql")
 
 REQUIRED_TABLES = {
     "users",
+    "admins",
+    "categories",
     "products",
     "cart_items",
     "orders",
@@ -50,6 +52,7 @@ def _migrate_existing_schema(connection):
         },
         "products": {
             "updated_at": "TEXT NOT NULL DEFAULT ''",
+            "is_active": "INTEGER NOT NULL DEFAULT 1",
         },
         "cart_items": {
             "updated_at": "TEXT NOT NULL DEFAULT ''",
@@ -150,9 +153,19 @@ def init_db(database_path=DB_PATH):
 
         _migrate_existing_schema(connection)
 
-        from seed import seed_products
+        from seed import PRODUCT_CATEGORIES, seed_products
 
         seed_products(connection)
+        connection.executemany(
+            "INSERT OR IGNORE INTO categories (name) VALUES (?)",
+            ((category,) for category in PRODUCT_CATEGORIES),
+        )
+        connection.execute(
+            """
+            INSERT OR IGNORE INTO categories (name)
+            SELECT DISTINCT category FROM products WHERE TRIM(category) != ''
+            """
+        )
         connection.commit()
 
         tables = {

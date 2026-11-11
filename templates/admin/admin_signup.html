@@ -1,0 +1,41 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Admin Signup | Student Cart{% endblock %}
+
+{% block auth_content %}
+    {% if signup_available %}
+        {% include 'admin/_admin_signup_form.html' %}
+    {% else %}
+        <section class="auth-shell admin-signup-shell">
+            <div class="auth-card admin-auth-card">
+                <div class="auth-header">
+                    <span class="eyebrow">Administrator access</span>
+                    <h1>Admin Signup Closed</h1>
+                    <p>The first administrator account has already been created. Public signup is disabled.</p>
+                </div>
+                <div class="admin-auth-links">
+                    <p>Already have an account? <a href="{{ url_for('admin_login') }}">Admin Login</a></p>
+                    <a href="{{ url_for('home') }}">Back to Student Shopping Cart</a>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if signup_available %}
+        {% include 'admin/_admin_signup_form.html' %}
+    {% else %}
+        <section class="admin-page-heading">
+            <div>
+                <span class="eyebrow">Administrator access</span>
+                <h1>Admin Signup Closed</h1>
+                <p>The first administrator account already exists. Public signup is disabled.</p>
+            </div>
+        </section>
+        <section class="panel admin-form-panel">
+            <p>Already have an account? <a href="{{ url_for('admin_login') }}">Admin Login</a></p>
+            <p>Additional administrator accounts can only be created by an authenticated administrator.</p>
+        </section>
+    {% endif %}
+{% endblock %}

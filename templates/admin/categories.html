@@ -1,0 +1,62 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Categories | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div>
+        <span class="eyebrow">Catalogue organization</span>
+        <h1>Categories</h1>
+        <p>Manage the categories used by products in the shared student catalogue.</p>
+    </div>
+</section>
+
+<section class="admin-category-layout">
+    <div class="panel admin-form-panel">
+        <h2>Add a category</h2>
+        <form method="POST" class="admin-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="add">
+            <div class="input-group">
+                <label for="category_name">Category name</label>
+                <input id="category_name" name="category_name" maxlength="50" required>
+            </div>
+            <button class="primary-btn" type="submit">Add category</button>
+        </form>
+    </div>
+
+    <div class="panel admin-table-panel">
+        <div class="panel-header">
+            <div><span class="eyebrow">Product catalogue</span><h2>All Categories</h2></div>
+        </div>
+        {% if categories %}
+        <div class="admin-table-scroll">
+            <table class="admin-table">
+                <thead><tr><th>Category</th><th>Products</th><th>Active products</th><th>Action</th></tr></thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td><strong>{{ category.name }}</strong></td>
+                        <td>{{ category.product_count }}</td>
+                        <td>{{ category.active_product_count }}</td>
+                        <td>
+                            {% if category.product_count == 0 %}
+                            <form method="POST" onsubmit="return confirm('Delete this empty category?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="category_id" value="{{ category.id }}">
+                                <button class="danger-btn small-btn" type="submit">Delete</button>
+                            </form>
+                            {% else %}<span class="muted-note">In use</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="muted-note">No categories have been created yet.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

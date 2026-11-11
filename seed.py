@@ -2,6 +2,17 @@ import json
 import os
 
 
+PRODUCT_CATEGORIES = (
+    "Books",
+    "Stationery",
+    "Hostel Essentials",
+    "Bags",
+    "Accessories",
+    "Electronics",
+    "Snacks",
+)
+
+
 PRODUCTS = [
     {
         "name": "Blue Ballpoint Pen",

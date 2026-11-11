@@ -1,0 +1,74 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Admin Dashboard | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div>
+        <span class="eyebrow">Store management</span>
+        <h1>Admin Dashboard</h1>
+        <p>Welcome back, {{ admin.full_name }}. Here is the current store overview.</p>
+    </div>
+    <a class="primary-btn" href="{{ url_for('admin_add_product') }}"><i class="fa-solid fa-plus"></i> Add product</a>
+</section>
+
+<section class="admin-stat-grid" aria-label="Store summary">
+    <article class="admin-stat-card"><span>Total Products</span><strong>{{ stats.total_products }}</strong><i class="fa-solid fa-boxes-stacked"></i></article>
+    <article class="admin-stat-card"><span>Active Products</span><strong>{{ stats.active_products }}</strong><i class="fa-solid fa-circle-check"></i></article>
+    <article class="admin-stat-card"><span>Out of Stock</span><strong>{{ stats.out_of_stock_products }}</strong><i class="fa-solid fa-triangle-exclamation"></i></article>
+    <article class="admin-stat-card"><span>Total Orders</span><strong>{{ order_stats.total_orders }}</strong><i class="fa-solid fa-receipt"></i></article>
+    <article class="admin-stat-card"><span>Pending Orders</span><strong>{{ order_stats.pending_orders }}</strong><i class="fa-solid fa-clock"></i></article>
+    <article class="admin-stat-card"><span>Completed Orders</span><strong>{{ order_stats.completed_orders }}</strong><i class="fa-solid fa-check-double"></i></article>
+</section>
+
+<section class="admin-shortcuts" aria-label="Management shortcuts">
+    <a class="admin-shortcut-card" href="{{ url_for('admin_add_product') }}"><i class="fa-solid fa-plus"></i><span><strong>Add Product</strong><small>Publish an item to the student catalogue</small></span></a>
+    <a class="admin-shortcut-card" href="{{ url_for('admin_products') }}"><i class="fa-solid fa-boxes-stacked"></i><span><strong>Manage Products</strong><small>Update prices, stock, and visibility</small></span></a>
+    <a class="admin-shortcut-card" href="{{ url_for('admin_categories') }}"><i class="fa-solid fa-tags"></i><span><strong>Categories</strong><small>Organize catalogue products</small></span></a>
+    <a class="admin-shortcut-card" href="{{ url_for('admin_orders') }}"><i class="fa-solid fa-receipt"></i><span><strong>Manage Orders</strong><small>Review and update student orders</small></span></a>
+</section>
+
+<section class="admin-sales-summary" aria-label="Sales summary">
+    <div><span class="eyebrow">Sales summary</span><h2>Store performance</h2></div>
+    <div><small>Sales excluding cancelled orders</small><strong>₹{{ '%.2f'|format(sales_summary.sales_total) }}</strong></div>
+    <div><small>Average order value</small><strong>₹{{ '%.2f'|format(sales_summary.average_order) }}</strong></div>
+    <a class="text-link" href="{{ url_for('admin_sales') }}">View sales overview</a>
+</section>
+
+<section class="panel admin-table-panel">
+    <div class="panel-header"><div><span class="eyebrow">Recently added</span><h2>Recent Products</h2></div><a class="text-link" href="{{ url_for('admin_products') }}">Manage products</a></div>
+    {% if recent_products %}
+    <div class="admin-table-scroll">
+        <table class="admin-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th></tr></thead>
+            <tbody>{% for product in recent_products %}
+                <tr>
+                    <td><div class="admin-product-cell"><img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="" loading="lazy"><strong>{{ product.name }}</strong></div></td>
+                    <td>{{ product.category }}</td>
+                    <td>₹{{ '%.2f'|format(product.price) }}</td>
+                    <td>{{ product.stock }}</td>
+                    <td><span class="admin-status {% if product.is_active %}status-active{% else %}status-inactive{% endif %}">{{ 'Active' if product.is_active else 'Inactive' }}</span></td>
+                </tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<p class="muted-note">No products have been added.</p>{% endif %}
+</section>
+
+<section class="panel admin-table-panel">
+    <div class="panel-header"><div><span class="eyebrow">Latest activity</span><h2>Recent Orders</h2></div><a class="text-link" href="{{ url_for('admin_orders') }}">Manage orders</a></div>
+    {% if recent_orders %}
+    <div class="admin-table-scroll">
+        <table class="admin-table">
+            <thead><tr><th>Order</th><th>Student</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>{% for order in recent_orders %}
+                <tr>
+                    <td>{{ order.order_id }}</td><td>{{ order.student_name }}</td><td>{{ order.created_at }}</td>
+                    <td>{{ order.item_count }}</td><td>₹{{ '%.2f'|format(order.total_amount) }}</td><td>{{ order.order_status }}</td>
+                </tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<p class="muted-note">No orders have been placed yet.</p>{% endif %}
+</section>
+{% endblock %}

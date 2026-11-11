@@ -27,18 +27,38 @@
         </div>
         <div class="nav-links">
             <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}" {% if request.endpoint in ('home', 'dashboard') %}aria-current="page"{% endif %}>Home</a>
-            <a href="{{ url_for('products') }}" {% if request.endpoint in ('products', 'product_detail') %}aria-current="page"{% endif %}>Products</a>
             <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}#categories">Categories</a>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('products') }}" {% if request.endpoint in ('products', 'product_detail') %}aria-current="page"{% endif %}>Search Products</a>
+                <a href="{{ url_for('dashboard') }}#latest-products">Latest</a>
+                <a href="{{ url_for('dashboard') }}#special-offers">Special Offers</a>
+                <a href="{{ url_for('profile') }}" {% if request.endpoint == 'profile' %}aria-current="page"{% endif %}>Student Profile</a>
+            {% else %}
+                <a href="{{ url_for('products') }}" {% if request.endpoint in ('products', 'product_detail') %}aria-current="page"{% endif %}>Search Products</a>
+            {% endif %}
             <a href="{{ url_for('kit_planner') }}" {% if request.endpoint == 'kit_planner' %}aria-current="page"{% endif %}>Kit Planner</a>
             <a class="cart-pill" href="{{ url_for('cart') }}" {% if request.endpoint in ('cart', 'checkout') %}aria-current="page"{% endif %}><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Cart <span>{{ cart_count }}</span></a>
         </div>
         <div class="nav-actions">
+            <a class="admin-login-link" href="{{ url_for('admin_login') }}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Admin Login</a>
             {% if session.get('user_id') %}
+                <form method="POST" action="{{ url_for('switch_view') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="target" value="admin">
+                    <button class="view-switch-btn" type="submit"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Switch to Admin View</button>
+                </form>
                 <form method="POST" action="{{ url_for('logout') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="logout-btn" type="submit">Log out</button>
                 </form>
             {% else %}
+                {% if session.get('admin_id') %}
+                    <form method="POST" action="{{ url_for('switch_view') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="target" value="admin">
+                        <button class="view-switch-btn" type="submit"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Switch to Admin View</button>
+                    </form>
+                {% endif %}
                 <a class="primary-btn small-btn" href="{{ url_for('register') }}">Create account</a>
                 <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Log in</a>
             {% endif %}
@@ -57,14 +77,18 @@
             <a class="footer-brand" href="{{ url_for('home') }}">Student Cart</a>
             <p>Student essentials, organized around your campus life.</p>
             <nav class="footer-links" aria-label="Footer navigation">
-                {% if session.get('user_id') %}
-                    <a href="{{ url_for('dashboard') }}">Dashboard</a>
-                    <a href="{{ url_for('products') }}">Shop products</a>
-                    <a href="{{ url_for('orders') }}">Order history</a>
-                {% else %}
-                    <a href="{{ url_for('login') }}">Sign in</a>
-                    <a href="{{ url_for('register') }}">Create account</a>
-                {% endif %}
+                <div class="footer-role-links">
+                    <strong>STUDENT</strong>
+                    <a href="{{ url_for('login') }}">Student Login</a>
+                    <a href="{{ url_for('register') }}">Student Signup</a>
+                    {% if session.get('user_id') %}
+                        <a href="{{ url_for('orders') }}">My Orders</a>
+                    {% endif %}
+                </div>
+                <div class="footer-role-links">
+                    <strong>ADMIN</strong>
+                    <a href="{{ url_for('admin_login') }}">Admin Login</a>
+                </div>
             </nav>
             <small>Sample catalogue and demo checkout. No real payments are processed.</small>
         </div>

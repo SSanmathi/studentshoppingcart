@@ -6,15 +6,20 @@ import os
 import secrets
 from collections import deque
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
+from functools import wraps
 
+import click
+from dotenv import load_dotenv
 from flask import Flask, flash, g, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from database import DB_PATH, get_db_connection, init_db
 
 from catalog import find_products as search_catalog, index_products
 from pricing import calculate_product_price
-from seed import CATEGORY_IMAGES
+from seed import CATEGORY_IMAGES, PRODUCT_CATEGORIES
 from student_tools import (
     DEPARTMENTS,
     HOSTEL_CHECKLIST,
@@ -26,6 +31,9 @@ from student_tools import (
     recommend_for_needs,
 )
 
+# Load project-local settings for both `python app.py` and VS Code runs.
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
 app = Flask(__name__)
 environment = os.environ.get("STUDENT_CART_ENV", "development").strip().lower()
 secret_key = os.environ.get("STUDENT_CART_SECRET_KEY")
@@ -36,7 +44,11 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=environment == "production",
+    MAX_CONTENT_LENGTH=4 * 1024 * 1024,
 )
+
+PRODUCT_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_PRODUCT_IMAGE_BYTES = 3 * 1024 * 1024
 
 
 @app.before_request
@@ -109,14 +121,53 @@ def get_db():
     return g.db
 
 
+def active_role():
+    selected_role = session.get("active_role")
+    if selected_role in {"admin", "student"}:
+        return selected_role
+    if "admin_id" in session and "user_id" not in session:
+        return "admin"
+    if "user_id" in session:
+        return "student"
+    return None
+
+
+def establish_role_session(role, identity_key, identity_id):
+    other_identity = "admin_id" if identity_key == "user_id" else "user_id"
+    other_id = session.get(other_identity)
+    session.clear()
+    if other_id is not None:
+        session[other_identity] = other_id
+    session[identity_key] = identity_id
+    session["active_role"] = role
+    session.permanent = True
+
+
 def login_required(view):
+    @wraps(view)
     def wrapped(*args, **kwargs):
+        if active_role() == "admin":
+            return redirect(url_for("admin_dashboard"))
         if "user_id" not in session:
             flash("Please log in to continue.", "error")
             return redirect(url_for("login"))
         return view(*args, **kwargs)
 
-    wrapped.__name__ = view.__name__
+    return wrapped
+
+
+def admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if "admin_id" not in session or active_role() != "admin":
+            flash("Please log in with an administrator account.", "error")
+            return redirect(url_for("admin_login"))
+        if current_admin() is None:
+            session.clear()
+            flash("Administrator account not found. Please sign in again.", "error")
+            return redirect(url_for("admin_login"))
+        return view(*args, **kwargs)
+
     return wrapped
 
 
@@ -135,7 +186,10 @@ def get_user_by_email(email):
 
 
 def get_product_by_id(product_id):
-    return get_db().execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    return get_db().execute(
+        "SELECT * FROM products WHERE id = ? AND is_active = 1",
+        (product_id,),
+    ).fetchone()
 
 
 def with_product_pricing(products, quantities=None, now=None):
@@ -170,6 +224,20 @@ def with_product_pricing(products, quantities=None, now=None):
         priced.update(calculation)
         priced["unit_price"] = calculation["effective_price"]
         priced["line_total"] = calculation["total"]
+        original_price = priced.get("original_price")
+        if original_price is not None and original_price > calculation["effective_price"]:
+            priced["display_original_price"] = original_price
+        elif calculation["applied_offer"]:
+            priced["display_original_price"] = calculation["list_price"]
+        else:
+            priced["display_original_price"] = None
+        if priced["display_original_price"]:
+            priced["display_discount_percentage"] = round(
+                (1 - calculation["effective_price"] / priced["display_original_price"]) * 100,
+                2,
+            )
+        else:
+            priced["display_discount_percentage"] = 0
         priced_products.append(priced)
     return priced_products
 
@@ -218,6 +286,7 @@ def find_products(query="", category="all", max_price=None, in_stock=False, sort
         SELECT p.*,
             (SELECT AVG(pr.rating) FROM product_reviews pr WHERE pr.product_id = p.id) AS customer_rating
         FROM products p
+        WHERE p.is_active = 1
         """
     ).fetchall()
     catalogue = with_product_pricing(catalogue)
@@ -247,7 +316,7 @@ def get_recently_viewed_products(exclude_ids=()):
 
     placeholders = ", ".join("?" for _ in unique_ids)
     products = get_db().execute(
-        f"SELECT * FROM products WHERE id IN ({placeholders})",
+        f"SELECT * FROM products WHERE is_active = 1 AND id IN ({placeholders})",
         unique_ids,
     ).fetchall()
     product_index = index_products(products)
@@ -269,7 +338,11 @@ def navigation_context():
     counts = get_db().execute(
         """
         SELECT
-            COALESCE((SELECT SUM(quantity) FROM cart_items WHERE user_id = ?), 0) AS cart_count,
+            COALESCE((
+                SELECT SUM(ci.quantity)
+                FROM cart_items ci JOIN products p ON p.id = ci.product_id
+                WHERE ci.user_id = ? AND p.is_active = 1
+            ), 0) AS cart_count,
             COALESCE((SELECT COUNT(*) FROM wishlist_items WHERE user_id = ?), 0) AS wishlist_count
         """,
         (user_id, user_id),
@@ -294,7 +367,7 @@ def get_cart_items(user_id):
         SELECT ci.*, p.name, p.price, p.image_url, p.stock, p.category
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
-        WHERE ci.user_id = ?
+        WHERE ci.user_id = ? AND p.is_active = 1
         ORDER BY ci.id DESC
         """,
         (user_id,),
@@ -486,35 +559,58 @@ def get_budget_summary(user_id):
 
 def build_dashboard_context(user_id):
     products = get_db().execute(
-        "SELECT * FROM products ORDER BY created_at DESC LIMIT 8"
+        "SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC LIMIT 8"
     ).fetchall()
     featured = get_db().execute(
-        "SELECT * FROM products WHERE category = 'Stationery' AND featured = 1 ORDER BY price ASC LIMIT 6"
+        "SELECT * FROM products WHERE is_active = 1 AND category = 'Stationery' AND featured = 1 ORDER BY price ASC LIMIT 6"
     ).fetchall()
     essential = get_db().execute(
-        "SELECT * FROM products WHERE is_essential = 1 ORDER BY price ASC LIMIT 6"
+        "SELECT * FROM products WHERE is_active = 1 AND is_essential = 1 ORDER BY price ASC LIMIT 6"
+    ).fetchall()
+    latest_products = get_db().execute(
+        "SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC, id DESC LIMIT 8"
+    ).fetchall()
+    special_offers = get_db().execute(
+        """
+        SELECT p.* FROM products p
+        WHERE p.is_active = 1 AND p.stock > 0
+          AND (
+              (p.original_price IS NOT NULL AND p.original_price > p.price)
+              OR EXISTS (
+                  SELECT 1 FROM product_offers po
+                  WHERE po.product_id = p.id AND po.is_active = 1
+                    AND po.starts_at <= CURRENT_TIMESTAMP AND po.ends_at >= CURRENT_TIMESTAMP
+              )
+          )
+        ORDER BY p.created_at DESC, p.id DESC
+        LIMIT 8
+        """
     ).fetchall()
     cart_summary = calculate_cart(user_id)
     budget_summary = get_budget_summary(user_id)
     context = {
         "products": products,
-        "catalog_count": get_db().execute("SELECT COUNT(*) FROM products").fetchone()[0],
+        "catalog_count": get_db().execute(
+            "SELECT COUNT(*) FROM products WHERE is_active = 1"
+        ).fetchone()[0],
         "recently_viewed_products": get_recently_viewed_products(),
+        "latest_products": latest_products,
+        "special_offers": special_offers,
         "featured": featured,
         "essential": essential,
         "international_products": get_db().execute(
-            "SELECT * FROM products WHERE is_international = 1 AND stock > 0 ORDER BY price ASC LIMIT 8"
+            "SELECT * FROM products WHERE is_active = 1 AND is_international = 1 AND stock > 0 ORDER BY price ASC LIMIT 8"
         ).fetchall(),
         "hostel_products": get_db().execute(
-            "SELECT * FROM products WHERE category = 'Hostel Essentials' AND stock > 0 ORDER BY featured DESC, price ASC LIMIT 8"
+            "SELECT * FROM products WHERE is_active = 1 AND category = 'Hostel Essentials' AND stock > 0 ORDER BY featured DESC, price ASC LIMIT 8"
         ).fetchall(),
         "snack_products": get_db().execute(
-            "SELECT * FROM products WHERE category = 'Hostel Essentials' AND subcategory = 'Food and Snacks' AND stock > 0 ORDER BY featured DESC, price ASC LIMIT 6"
+            "SELECT * FROM products WHERE is_active = 1 AND category = 'Hostel Essentials' AND subcategory = 'Food and Snacks' AND stock > 0 ORDER BY featured DESC, price ASC LIMIT 6"
         ).fetchall(),
         "books": get_db().execute(
             """
             SELECT p.* FROM products p
-            WHERE p.category = 'Books' AND p.stock > 0
+            WHERE p.is_active = 1 AND p.category = 'Books' AND p.stock > 0
             ORDER BY p.featured DESC,
                 COALESCE((SELECT AVG(pr.rating) FROM product_reviews pr WHERE pr.product_id = p.id), 0) DESC,
                 p.price ASC
@@ -522,12 +618,12 @@ def build_dashboard_context(user_id):
             """
         ).fetchall(),
         "low_stock_products": get_db().execute(
-            "SELECT * FROM products WHERE stock BETWEEN 1 AND 5 ORDER BY stock ASC, name ASC LIMIT 6"
+            "SELECT * FROM products WHERE is_active = 1 AND stock BETWEEN 1 AND 5 ORDER BY stock ASC, name ASC LIMIT 6"
         ).fetchall(),
         "budget_recommendations": get_db().execute(
             """
             SELECT p.* FROM products p
-            WHERE p.stock > 0 AND p.price <= ?
+            WHERE p.is_active = 1 AND p.stock > 0 AND p.price <= ?
             ORDER BY p.featured DESC,
                 COALESCE((SELECT AVG(pr.rating) FROM product_reviews pr WHERE pr.product_id = p.id), 0) DESC,
                 p.price ASC
@@ -541,6 +637,8 @@ def build_dashboard_context(user_id):
     }
     for key in (
         "products",
+        "latest_products",
+        "special_offers",
         "featured",
         "essential",
         "international_products",
@@ -560,7 +658,7 @@ def get_recommendations(user_id):
         SELECT p.category, p.price, p.id
         FROM cart_items ci
         JOIN products p ON p.id = ci.product_id
-        WHERE ci.user_id = ?
+        WHERE ci.user_id = ? AND p.is_active = 1
         LIMIT 5
         """,
         (user_id,),
@@ -576,9 +674,9 @@ def get_recommendations(user_id):
     recommended = get_db().execute(
         f"""
         SELECT * FROM products
-        WHERE ({category_filter})
+        WHERE is_active = 1 AND (({category_filter})
         OR is_essential = 1
-        OR featured = 1
+        OR featured = 1)
         ORDER BY price ASC
         LIMIT 6
         """,
@@ -610,8 +708,12 @@ def get_user_orders(user_id):
 
 @app.route("/")
 def home():
-    if "user_id" in session:
-        return redirect(url_for("dashboard"))
+    if active_role() == "admin":
+        return redirect(url_for("admin_dashboard"))
+    if active_role() == "student":
+        if "user_id" in session:
+            return redirect(url_for("dashboard"))
+        return render_template("index.html")
     return render_template("index.html")
 
 
@@ -669,9 +771,7 @@ def register():
             flash("An account with this email already exists.", "error")
             return render_template("register.html")
 
-        session.clear()
-        session["user_id"] = user_id
-        session.permanent = True
+        establish_role_session("student", "user_id", user_id)
         flash("Registration successful! Welcome to Student Cart.", "success")
         return redirect(url_for("dashboard"))
 
@@ -686,9 +786,7 @@ def login():
 
         user = get_user_by_email(email)
         if user and check_password_hash(user["password_hash"], password):
-            session.clear()
-            session["user_id"] = user["id"]
-            session.permanent = True
+            establish_role_session("student", "user_id", user["id"])
             flash("Logged in successfully.", "success")
             return redirect(url_for("dashboard"))
 
@@ -701,14 +799,22 @@ def login():
 @app.route("/logout", methods=["POST"])
 @login_required
 def logout():
-    session.clear()
+    session.pop("user_id", None)
+    if session.get("admin_id") is not None:
+        session["active_role"] = "admin"
+    else:
+        session.clear()
     flash("You have been logged out.", "success")
-    return redirect(url_for("login"))
+    return redirect(
+        url_for("admin_dashboard") if active_role() == "admin" else url_for("login")
+    )
 
 
 @app.route("/dashboard")
 @login_required
 def dashboard():
+    if active_role() == "admin":
+        return redirect(url_for("admin_dashboard"))
     user = get_user_by_id(session["user_id"])
     context = build_dashboard_context(session["user_id"])
     context["user"] = user
@@ -753,7 +859,7 @@ def products():
         min_price=min_price,
     )
     categories = get_db().execute(
-        "SELECT DISTINCT category FROM products ORDER BY category"
+        "SELECT DISTINCT category FROM products WHERE is_active = 1 ORDER BY category"
     ).fetchall()
     cart_summary = calculate_cart(session["user_id"])
     return render_template(
@@ -797,7 +903,7 @@ def product_detail(product_id):
     all_products = with_product_pricing(get_db().execute(
         """
         SELECT p.* FROM products p
-        WHERE p.stock > 0
+        WHERE p.is_active = 1 AND p.stock > 0
         ORDER BY COALESCE(
             (SELECT AVG(pr.rating) FROM product_reviews pr WHERE pr.product_id = p.id),
             0
@@ -937,11 +1043,8 @@ def cart():
 
 
 @app.route("/cart/add", methods=["POST"])
+@login_required
 def add_to_cart():
-    if "user_id" not in session:
-        flash("Please log in before adding items to your cart.", "error")
-        return redirect(url_for("login"))
-
     product_id = request.form.get("product_id", type=int)
     try:
         quantity = parse_quantity(request.form.get("quantity", "1"), maximum=99)
@@ -1018,7 +1121,7 @@ def shopping_lists():
         (user_id,),
     ).fetchall()
     all_products = get_db().execute(
-        "SELECT * FROM products ORDER BY name ASC"
+        "SELECT * FROM products WHERE is_active = 1 ORDER BY name ASC"
     ).fetchall()
     lists_with_items = []
     for shopping_list in shopping_lists_data:
@@ -1027,7 +1130,7 @@ def shopping_lists():
             SELECT sli.*, p.name, p.price
             FROM shopping_list_items sli
             JOIN products p ON p.id = sli.product_id
-            WHERE sli.list_id = ?
+            WHERE sli.list_id = ? AND p.is_active = 1
             ORDER BY sli.created_at DESC
             """,
             (shopping_list["id"],),
@@ -1355,7 +1458,7 @@ def product_api(product_id):
 @app.route("/api/cart")
 def cart_api():
     user_id = session.get("user_id")
-    if user_id is None:
+    if user_id is None or active_role() != "student":
         return jsonify(error="Please log in to view your cart."), 401
     summary = calculate_cart(user_id)
     return jsonify(
@@ -1389,7 +1492,7 @@ def wishlist():
         """
         SELECT p.* FROM wishlist_items wi
         JOIN products p ON p.id = wi.product_id
-        WHERE wi.user_id = ?
+        WHERE wi.user_id = ? AND p.is_active = 1
         ORDER BY wi.created_at DESC
         """,
         (session["user_id"],),
@@ -1511,7 +1614,9 @@ def kit_planner():
         kit_budget = get_budget_summary(user_id)["budget"]
 
     products = with_review_summaries(
-        get_db().execute("SELECT * FROM products WHERE stock > 0 ORDER BY name COLLATE NOCASE").fetchall()
+        get_db().execute(
+            "SELECT * FROM products WHERE is_active = 1 AND stock > 0 ORDER BY name COLLATE NOCASE"
+        ).fetchall()
     )
     recommendations = recommend_for_needs(products, needs, department, semester)
     recommended_ids = set()
@@ -1572,7 +1677,9 @@ def hostel_move_in():
         if item in {key for key, *_ in HOSTEL_CHECKLIST}
     )
     products = with_product_pricing(
-        get_db().execute("SELECT * FROM products WHERE stock > 0").fetchall()
+        get_db().execute(
+            "SELECT * FROM products WHERE is_active = 1 AND stock > 0"
+        ).fetchall()
     )
     checklist = build_hostel_checklist(products)
     estimated_missing_total = 0.0
@@ -1637,7 +1744,9 @@ def budget_challenge():
     except ValueError:
         budget_limit = 500.0
     products = with_product_pricing(
-        get_db().execute("SELECT * FROM products WHERE stock > 0").fetchall()
+        get_db().execute(
+            "SELECT * FROM products WHERE is_active = 1 AND stock > 0"
+        ).fetchall()
     )
     recommendations, recommended_ids = build_budget_challenge(products, purpose, budget_limit)
     return render_template(
@@ -1655,7 +1764,9 @@ def budget_challenge():
 @login_required
 def compare_products():
     all_products = with_review_summaries(
-        get_db().execute("SELECT * FROM products ORDER BY name COLLATE NOCASE").fetchall()
+        get_db().execute(
+            "SELECT * FROM products WHERE is_active = 1 ORDER BY name COLLATE NOCASE"
+        ).fetchall()
     )
     product_index = {product["id"]: product for product in all_products}
     selected_ids = []
@@ -1677,6 +1788,938 @@ def compare_products():
         selected_products=selected_products,
         selected_ids=set(selected_ids),
     )
+
+
+def current_admin():
+    admin_id = session.get("admin_id")
+    if admin_id is None:
+        return None
+    return get_db().execute(
+        "SELECT * FROM admins WHERE id = ?",
+        (admin_id,),
+    ).fetchone()
+
+
+def get_admin_categories():
+    rows = get_db().execute(
+        "SELECT name FROM categories ORDER BY name COLLATE NOCASE"
+    ).fetchall()
+    return [row["name"] for row in rows]
+
+
+def valid_admin_email(email):
+    return len(email) <= 254 and re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email)
+
+
+def valid_admin_phone(phone):
+    if not phone:
+        return True
+    return (
+        re.fullmatch(r"[0-9+() -]{7,20}", phone)
+        and sum(character.isdigit() for character in phone) >= 7
+    )
+
+
+def create_admin_account(name, email, phone, password, first_admin_only=False):
+    name = name.strip()
+    email = email.strip().lower()
+    phone = phone.strip()
+    if not 2 <= len(name) <= 100:
+        raise ValueError("Admin name must be between 2 and 100 characters.")
+    if not valid_admin_email(email):
+        raise ValueError("Please enter a valid email address.")
+    if not valid_admin_phone(phone):
+        raise ValueError("Enter a valid phone number with at least 7 digits.")
+    if len(password) < 8:
+        raise ValueError("Admin passwords must be at least 8 characters long.")
+
+    connection = get_db()
+    connection.execute("BEGIN IMMEDIATE")
+    try:
+        admin_count = connection.execute(
+            "SELECT COUNT(*) FROM admins"
+        ).fetchone()[0]
+        if first_admin_only and admin_count:
+            raise ValueError(
+                "An administrator already exists. Sign in as an admin to add another."
+            )
+        cursor = connection.execute(
+            """
+            INSERT INTO admins (full_name, email, phone_number, password_hash)
+            VALUES (?, ?, ?, ?)
+            """,
+            (name, email, phone, generate_password_hash(password)),
+        )
+        connection.commit()
+        return cursor.lastrowid
+    except sqlite3.IntegrityError as error:
+        connection.rollback()
+        if "admins.email" in str(error):
+            raise ValueError("An administrator with this email already exists.") from error
+        raise
+    except Exception:
+        connection.rollback()
+        raise
+
+
+@app.cli.command("create-admin")
+def create_first_admin():
+    """Create the first administrator from a trusted local terminal."""
+    init_db()
+    existing_admin = get_db().execute(
+        "SELECT 1 FROM admins LIMIT 1"
+    ).fetchone()
+    if existing_admin:
+        raise click.ClickException(
+            "An administrator already exists. Sign in and create additional admins from Admin Accounts."
+        )
+
+    name = click.prompt("Admin name").strip()
+    email = click.prompt("Admin email").strip().lower()
+    phone = click.prompt("Admin phone number").strip()
+    password = click.prompt(
+        "Admin password", hide_input=True, confirmation_prompt=True
+    )
+    try:
+        create_admin_account(
+            name,
+            email,
+            phone,
+            password,
+            first_admin_only=True,
+        )
+    except ValueError as error:
+        raise click.ClickException(str(error)) from error
+    click.echo("First administrator created. You can now sign in at /admin/login.")
+
+
+@app.cli.command("reset-admin-password")
+def reset_admin_password():
+    """Reset an administrator password from a trusted local terminal."""
+    init_db()
+    email = click.prompt("Admin email").strip().lower()
+    connection = get_db()
+    admin = connection.execute(
+        "SELECT id FROM admins WHERE email = ?",
+        (email,),
+    ).fetchone()
+    if admin is None:
+        raise click.ClickException("No administrator account was found with that email.")
+
+    password = click.prompt(
+        "New admin password", hide_input=True, confirmation_prompt=True
+    )
+    if len(password) < 8:
+        raise click.ClickException("Admin passwords must be at least 8 characters long.")
+
+    connection.execute("BEGIN IMMEDIATE")
+    try:
+        cursor = connection.execute(
+            "UPDATE admins SET password_hash = ? WHERE id = ?",
+            (generate_password_hash(password), admin["id"]),
+        )
+        if cursor.rowcount != 1:
+            raise click.ClickException("Administrator account was not updated.")
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    click.echo("Administrator password updated. You can now sign in at /admin/login.")
+
+
+def parse_product_form(allowed_categories):
+    name = request.form.get("name", "").strip()
+    description = request.form.get("description", "").strip()
+    category = request.form.get("category", "").strip()
+    status = request.form.get("status", "active")
+    errors = []
+    if not 2 <= len(name) <= 120:
+        errors.append("Product name must be between 2 and 120 characters.")
+    if not 5 <= len(description) <= 2000:
+        errors.append("Description must be between 5 and 2,000 characters.")
+    if category not in allowed_categories:
+        errors.append("Choose a valid product category.")
+    if status not in {"active", "inactive"}:
+        errors.append("Choose a valid product status.")
+
+    try:
+        original_price = Decimal(request.form.get("original_price", "").strip())
+        discount_price = Decimal(request.form.get("discount_price", "").strip())
+        if (
+            not original_price.is_finite()
+            or not discount_price.is_finite()
+            or original_price <= 0
+            or discount_price <= 0
+            or original_price > Decimal("100000000")
+            or discount_price > original_price
+            or original_price != original_price.quantize(Decimal("0.01"))
+            or discount_price != discount_price.quantize(Decimal("0.01"))
+        ):
+            raise InvalidOperation
+    except (InvalidOperation, ValueError):
+        errors.append(
+            "Enter a valid discount price greater than zero and no higher than the original price."
+        )
+        original_price = Decimal("0")
+        discount_price = Decimal("0")
+
+    try:
+        stock = int(request.form.get("stock", ""))
+        if not 0 <= stock <= 1000000:
+            raise ValueError
+    except (TypeError, ValueError):
+        errors.append("Stock must be a whole number between 0 and 1,000,000.")
+        stock = 0
+
+    return {
+        "name": name,
+        "description": description,
+        "category": category,
+        "original_price": float(original_price),
+        "discount_price": float(discount_price),
+        "stock": stock,
+        "is_active": int(status == "active"),
+    }, errors
+
+
+def save_product_image(upload):
+    if upload is None or not upload.filename:
+        raise ValueError("Choose a product image.")
+
+    safe_name = secure_filename(upload.filename)
+    extension = os.path.splitext(safe_name)[1].lower()
+    if extension not in PRODUCT_IMAGE_EXTENSIONS:
+        raise ValueError("Upload a JPG, PNG, or WebP image.")
+
+    content = upload.stream.read(MAX_PRODUCT_IMAGE_BYTES + 1)
+    if not content or len(content) > MAX_PRODUCT_IMAGE_BYTES:
+        raise ValueError("Product images must be smaller than 3 MB.")
+    signatures = {
+        ".jpg": content.startswith(b"\xff\xd8\xff"),
+        ".jpeg": content.startswith(b"\xff\xd8\xff"),
+        ".png": content.startswith(b"\x89PNG\r\n\x1a\n"),
+        ".webp": (
+            len(content) >= 12
+            and content[:4] == b"RIFF"
+            and content[8:12] == b"WEBP"
+        ),
+    }
+    if not signatures[extension]:
+        raise ValueError("The uploaded file does not match its image type.")
+
+    filename = f"{uuid.uuid4().hex}{extension}"
+    upload_directory = os.path.join(
+        app.root_path, "static", "uploads", "products"
+    )
+    os.makedirs(upload_directory, exist_ok=True)
+    with open(os.path.join(upload_directory, filename), "wb") as image_file:
+        image_file.write(content)
+    return filename
+
+
+def remove_product_image(image_url):
+    prefix = "/static/uploads/products/"
+    if not image_url or not image_url.startswith(prefix):
+        return
+    filename = os.path.basename(image_url[len(prefix):])
+    if not filename or filename != image_url[len(prefix):]:
+        return
+    image_path = os.path.join(
+        app.root_path, "static", "uploads", "products", filename
+    )
+    if os.path.isfile(image_path):
+        os.remove(image_path)
+
+
+def render_admin_product_form(product=None, form_values=None):
+    categories = get_admin_categories()
+    if product and product["category"] not in categories:
+        categories.append(product["category"])
+    return render_template(
+        "admin/product_form.html",
+        admin=current_admin(),
+        product=product,
+        categories=categories,
+        form_values=form_values or {},
+    )
+
+
+@app.route("/admin")
+@app.route("/admin/dashboard")
+@admin_required
+def admin_dashboard():
+    stats = get_db().execute(
+        """
+        SELECT COUNT(*) AS total_products,
+               COALESCE(SUM(is_active = 1), 0) AS active_products,
+               COALESCE(SUM(is_active = 1 AND stock = 0), 0) AS out_of_stock_products
+        FROM products
+        """
+    ).fetchone()
+    order_stats = get_db().execute(
+        """
+        SELECT COUNT(*) AS total_orders,
+               COALESCE(SUM(order_status = 'Pending'), 0) AS pending_orders,
+               COALESCE(SUM(order_status = 'Completed'), 0) AS completed_orders
+        FROM orders
+        """
+    ).fetchone()
+    sales_summary = get_db().execute(
+        """
+        SELECT COALESCE(SUM(total_amount), 0) AS sales_total,
+               COALESCE(AVG(total_amount), 0) AS average_order
+        FROM orders
+        WHERE order_status != 'Cancelled'
+        """
+    ).fetchone()
+    recent_products = get_db().execute(
+        """
+        SELECT id, name, category, price, original_price, stock, is_active, image_url, created_at
+        FROM products ORDER BY created_at DESC, id DESC LIMIT 6
+        """
+    ).fetchall()
+    recent_orders = get_db().execute(
+        """
+        SELECT o.id, o.order_id, o.order_status, o.total_amount, o.created_at,
+               u.full_name AS student_name
+        FROM orders o JOIN users u ON u.id = o.user_id
+        ORDER BY o.created_at DESC, o.id DESC LIMIT 6
+        """
+    ).fetchall()
+    return render_template(
+        "admin/dashboard.html",
+        admin=current_admin(),
+        stats=stats,
+        order_stats=order_stats,
+        sales_summary=sales_summary,
+        recent_products=recent_products,
+        recent_orders=recent_orders,
+    )
+
+
+@app.route("/switch-view", methods=["POST"])
+@app.route("/switch-to-student", methods=["POST"])
+@app.route("/switch-to-admin", methods=["POST"])
+def switch_view():
+    target_role = request.form.get("target", "")
+    if request.path == "/switch-to-student":
+        target_role = "student"
+    elif request.path == "/switch-to-admin":
+        target_role = "admin"
+
+    if target_role == "student":
+        if "admin_id" not in session or current_admin() is None:
+            session.pop("admin_id", None)
+            if active_role() == "admin":
+                session.pop("active_role", None)
+            flash("Sign in with an administrator account before switching views.", "error")
+            return redirect(url_for("admin_login"))
+        session["active_role"] = "student"
+        if "user_id" not in session or get_user_by_id(session["user_id"]) is None:
+            session.pop("user_id", None)
+            flash("You are viewing the student website. Log in to use your cart and account.", "info")
+            return redirect(url_for("home"))
+        flash("Switched to Student View.", "success")
+        return redirect(url_for("dashboard"))
+
+    if target_role == "admin":
+        if "admin_id" not in session or current_admin() is None:
+            session.pop("admin_id", None)
+            flash("Verify an administrator account to switch to Admin View.", "error")
+            return redirect(url_for("admin_login"))
+        session["active_role"] = "admin"
+        flash("Switched to Admin View.", "success")
+        return redirect(url_for("admin_dashboard"))
+
+    flash("Choose a valid view.", "error")
+    if active_role() == "admin":
+        return redirect(url_for("admin_dashboard"))
+    if active_role() == "student":
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("login"))
+
+
+@app.route("/admin/signup", methods=["GET", "POST"])
+def admin_signup():
+    admin = current_admin()
+    is_admin = admin is not None and active_role() == "admin"
+    admin_count = get_db().execute(
+        "SELECT COUNT(*) FROM admins"
+    ).fetchone()[0]
+    first_admin_signup = admin_count == 0
+
+    if "user_id" in session and not is_admin:
+        flash("Student accounts cannot create administrator accounts.", "error")
+        return redirect(url_for("admin_login"))
+    if not first_admin_signup and not is_admin:
+        return render_template(
+            "admin/admin_signup.html",
+            signup_available=False,
+            admin=None,
+        )
+
+    if request.method == "POST":
+        if not first_admin_signup and not is_admin:
+            return render_template(
+                "admin/admin_signup.html",
+                signup_available=False,
+                admin=None,
+            ), 403
+
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        phone = request.form.get("phone", "").strip()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        errors = []
+        if password != confirm_password:
+            errors.append("Password and confirm password do not match.")
+        if not errors:
+            try:
+                create_admin_account(
+                    name,
+                    email,
+                    phone,
+                    password,
+                    first_admin_only=first_admin_signup and not is_admin,
+                )
+            except ValueError as error:
+                errors.append(str(error))
+        if errors:
+            for message in errors:
+                flash(message, "error")
+            return render_template(
+                "admin/admin_signup.html",
+                signup_available=first_admin_signup or is_admin,
+                admin=admin,
+            )
+        if not is_admin:
+            flash("Administrator account created. Please sign in.", "success")
+            return redirect(url_for("admin_login"))
+        flash("Additional administrator account created successfully.", "success")
+        return redirect(url_for("admin_dashboard"))
+    return render_template(
+        "admin/admin_signup.html",
+        signup_available=first_admin_signup or is_admin,
+        admin=admin,
+    )
+
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    if "admin_id" in session and current_admin() is not None:
+        session["active_role"] = "admin"
+        return redirect(url_for("admin_dashboard"))
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        admin = get_db().execute(
+            "SELECT * FROM admins WHERE email = ?",
+            (email,),
+        ).fetchone()
+        if admin and check_password_hash(admin["password_hash"], password):
+            establish_role_session("admin", "admin_id", admin["id"])
+            flash("Logged in to the admin dashboard.", "success")
+            return redirect(url_for("admin_dashboard"))
+        flash("Invalid administrator email or password.", "error")
+    admin_count = get_db().execute(
+        "SELECT COUNT(*) FROM admins"
+    ).fetchone()[0]
+    return render_template("admin/login.html", admin_count=admin_count)
+
+
+@app.route("/admin/logout", methods=["POST"])
+@admin_required
+def admin_logout():
+    session.pop("admin_id", None)
+    if session.get("user_id") is not None:
+        session["active_role"] = "student"
+    else:
+        session.clear()
+    flash("You have been logged out of the admin dashboard.", "success")
+    return redirect(
+        url_for("dashboard") if active_role() == "student" else url_for("admin_login")
+    )
+
+
+@app.route("/admin/products")
+@app.route("/admin/manage-products")
+@admin_required
+def admin_products():
+    products_list = get_db().execute(
+        "SELECT * FROM products ORDER BY created_at DESC, id DESC"
+    ).fetchall()
+    return render_template(
+        "admin/products.html",
+        admin=current_admin(),
+        products=products_list,
+    )
+
+
+@app.route("/admin/categories", methods=["GET", "POST"])
+@admin_required
+def admin_categories():
+    if request.method == "POST":
+        action = request.form.get("action", "")
+        category_name = request.form.get("category_name", "").strip()
+        if action == "add":
+            if not 2 <= len(category_name) <= 50:
+                flash("Category name must be between 2 and 50 characters.", "error")
+            else:
+                try:
+                    get_db().execute(
+                        "INSERT INTO categories (name) VALUES (?)",
+                        (category_name,),
+                    )
+                    get_db().commit()
+                    flash("Category added.", "success")
+                except sqlite3.IntegrityError as error:
+                    get_db().rollback()
+                    if "categories.name" not in str(error):
+                        raise
+                    flash("That category already exists.", "error")
+        elif action == "delete":
+            category_id = request.form.get("category_id", type=int)
+            category = get_db().execute(
+                "SELECT id, name FROM categories WHERE id = ?",
+                (category_id,),
+            ).fetchone()
+            if category is None:
+                flash("Category not found.", "error")
+            else:
+                product_count = get_db().execute(
+                    "SELECT COUNT(*) FROM products WHERE category = ?",
+                    (category["name"],),
+                ).fetchone()[0]
+                if product_count:
+                    flash(
+                        "This category is used by products. Move or delete those products first.",
+                        "error",
+                    )
+                else:
+                    get_db().execute(
+                        "DELETE FROM categories WHERE id = ?",
+                        (category_id,),
+                    )
+                    get_db().commit()
+                    flash("Category deleted.", "success")
+        else:
+            flash("Choose a valid category action.", "error")
+        return redirect(url_for("admin_categories"))
+
+    categories = get_db().execute(
+        """
+        SELECT c.id, c.name, COUNT(p.id) AS product_count,
+               COALESCE(SUM(p.is_active = 1), 0) AS active_product_count
+        FROM categories c
+        LEFT JOIN products p ON p.category = c.name
+        GROUP BY c.id
+        ORDER BY c.name COLLATE NOCASE
+        """
+    ).fetchall()
+    return render_template(
+        "admin/categories.html",
+        admin=current_admin(),
+        categories=categories,
+    )
+
+
+@app.route("/admin/products/<int:product_id>/preview")
+@admin_required
+def admin_product_preview(product_id):
+    product = get_db().execute(
+        "SELECT * FROM products WHERE id = ?",
+        (product_id,),
+    ).fetchone()
+    if product is None:
+        flash("Product not found.", "error")
+        return redirect(url_for("admin_products"))
+    return render_template(
+        "admin/product_preview.html",
+        admin=current_admin(),
+        product=with_product_pricing([product])[0],
+    )
+
+
+@app.route("/admin/products/<int:product_id>/status", methods=["POST"])
+@admin_required
+def admin_toggle_product_status(product_id):
+    product = get_db().execute(
+        "SELECT id, is_active FROM products WHERE id = ?",
+        (product_id,),
+    ).fetchone()
+    if product is None:
+        flash("Product not found.", "error")
+    else:
+        new_status = 0 if product["is_active"] else 1
+        get_db().execute(
+            """
+            UPDATE products
+            SET is_active = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """,
+            (new_status, product_id),
+        )
+        get_db().commit()
+        flash(
+            "Product activated." if new_status else "Product deactivated.",
+            "success",
+        )
+    return redirect(url_for("admin_products"))
+
+
+@app.route("/admin/products/new", methods=["GET", "POST"])
+@app.route("/admin/add-product", methods=["GET", "POST"])
+@admin_required
+def admin_add_product():
+    if request.method == "POST":
+        product_data, errors = parse_product_form(set(get_admin_categories()))
+        filename = None
+        try:
+            filename = save_product_image(request.files.get("product_image"))
+        except ValueError as error:
+            errors.append(str(error))
+        if errors:
+            if filename:
+                remove_product_image(
+                    url_for("static", filename=f"uploads/products/{filename}")
+                )
+            for message in errors:
+                flash(message, "error")
+            return render_admin_product_form(form_values=request.form)
+
+        image_url = url_for("static", filename=f"uploads/products/{filename}")
+        try:
+            get_db().execute(
+                """
+                INSERT INTO products (
+                    name, category, description, price, original_price, stock,
+                    is_active, image_url, image_alt
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    product_data["name"],
+                    product_data["category"],
+                    product_data["description"],
+                    product_data["discount_price"],
+                    product_data["original_price"],
+                    product_data["stock"],
+                    product_data["is_active"],
+                    image_url,
+                    product_data["name"],
+                ),
+            )
+            get_db().commit()
+        except sqlite3.Error:
+            remove_product_image(image_url)
+            raise
+        flash("Product added. It is now available in the student catalogue.", "success")
+        return redirect(url_for("admin_products"))
+    return render_admin_product_form()
+
+
+@app.route("/admin/products/<int:product_id>/edit", methods=["GET", "POST"])
+@app.route("/admin/edit-product/<int:product_id>", methods=["GET", "POST"])
+@admin_required
+def admin_edit_product(product_id):
+    product = get_db().execute(
+        "SELECT * FROM products WHERE id = ?",
+        (product_id,),
+    ).fetchone()
+    if product is None:
+        flash("Product not found.", "error")
+        return redirect(url_for("admin_products"))
+
+    if request.method == "POST":
+        allowed_categories = set(get_admin_categories())
+        allowed_categories.add(product["category"])
+        product_data, errors = parse_product_form(allowed_categories)
+        upload = request.files.get("product_image")
+        new_filename = None
+        if upload and upload.filename:
+            try:
+                new_filename = save_product_image(upload)
+            except ValueError as error:
+                errors.append(str(error))
+        if errors:
+            if new_filename:
+                remove_product_image(
+                    url_for("static", filename=f"uploads/products/{new_filename}")
+                )
+            for message in errors:
+                flash(message, "error")
+            return render_admin_product_form(product, request.form)
+
+        image_url = (
+            url_for("static", filename=f"uploads/products/{new_filename}")
+            if new_filename
+            else product["image_url"]
+        )
+        try:
+            get_db().execute(
+                """
+                UPDATE products SET
+                    name = ?, category = ?, description = ?, price = ?,
+                    original_price = ?, stock = ?, is_active = ?, image_url = ?,
+                    image_alt = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (
+                    product_data["name"],
+                    product_data["category"],
+                    product_data["description"],
+                    product_data["discount_price"],
+                    product_data["original_price"],
+                    product_data["stock"],
+                    product_data["is_active"],
+                    image_url,
+                    product_data["name"],
+                    product_id,
+                ),
+            )
+            get_db().commit()
+        except sqlite3.Error:
+            if new_filename:
+                remove_product_image(image_url)
+            raise
+        if new_filename:
+            remove_product_image(product["image_url"])
+        flash("Product details updated.", "success")
+        return redirect(url_for("admin_products"))
+
+    return render_admin_product_form(product)
+
+
+@app.route("/admin/products/<int:product_id>/delete", methods=["POST"])
+@app.route("/admin/delete-product/<int:product_id>", methods=["POST"])
+@admin_required
+def admin_delete_product(product_id):
+    connection = get_db()
+    connection.execute("BEGIN IMMEDIATE")
+    product = connection.execute(
+        "SELECT * FROM products WHERE id = ?",
+        (product_id,),
+    ).fetchone()
+    if product is None:
+        connection.rollback()
+        flash("Product not found.", "error")
+        return redirect(url_for("admin_products"))
+    order_item = connection.execute(
+        "SELECT 1 FROM order_items WHERE product_id = ? LIMIT 1",
+        (product_id,),
+    ).fetchone()
+    if order_item:
+        connection.rollback()
+        flash(
+            "This product is part of an order and cannot be deleted. Deactivate it instead.",
+            "error",
+        )
+        return redirect(url_for("admin_products"))
+
+    for table in (
+        "cart_items",
+        "wishlist_items",
+        "shopping_list_items",
+        "product_reviews",
+        "product_offers",
+    ):
+        connection.execute(f"DELETE FROM {table} WHERE product_id = ?", (product_id,))
+    connection.execute("DELETE FROM products WHERE id = ?", (product_id,))
+    connection.commit()
+    remove_product_image(product["image_url"])
+    flash("Product deleted.", "success")
+    return redirect(url_for("admin_products"))
+
+
+@app.route("/admin/orders")
+@admin_required
+def admin_orders():
+    orders_list = get_db().execute(
+        """
+        SELECT o.*, u.full_name AS student_name, u.email AS student_email,
+               COUNT(oi.id) AS item_count,
+               GROUP_CONCAT(
+                   COALESCE(NULLIF(oi.product_name_at_purchase, ''), p.name)
+                   || ' × ' || oi.quantity,
+                   ', '
+               ) AS items_summary
+        FROM orders o
+        JOIN users u ON u.id = o.user_id
+        LEFT JOIN order_items oi ON oi.order_id = o.id
+        LEFT JOIN products p ON p.id = oi.product_id
+        GROUP BY o.id
+        ORDER BY o.created_at DESC, o.id DESC
+        """
+    ).fetchall()
+    return render_template(
+        "admin/orders.html",
+        admin=current_admin(),
+        orders=orders_list,
+    )
+
+
+@app.route("/admin/orders/<int:order_id>/status", methods=["POST"])
+@admin_required
+def admin_update_order_status(order_id):
+    new_status = request.form.get("status", "")
+    allowed_statuses = {"Pending", "Confirmed", "Completed", "Cancelled"}
+    if new_status not in allowed_statuses:
+        flash("Choose a valid order status.", "error")
+        return redirect(url_for("admin_orders"))
+
+    connection = get_db()
+    connection.execute("BEGIN IMMEDIATE")
+    order = connection.execute(
+        "SELECT id, order_status FROM orders WHERE id = ?",
+        (order_id,),
+    ).fetchone()
+    if order is None:
+        connection.rollback()
+        flash("Order not found.", "error")
+        return redirect(url_for("admin_orders"))
+    current_status = order["order_status"]
+    if current_status == new_status:
+        connection.rollback()
+        flash("The order already has that status.", "error")
+        return redirect(url_for("admin_orders"))
+    if current_status in {"Cancelled", "Completed"}:
+        connection.rollback()
+        flash("Cancelled and completed orders cannot be changed.", "error")
+        return redirect(url_for("admin_orders"))
+
+    if new_status == "Cancelled":
+        connection.execute(
+            """
+            UPDATE products
+            SET stock = stock + (
+                SELECT oi.quantity FROM order_items oi
+                WHERE oi.order_id = ? AND oi.product_id = products.id
+            ), updated_at = CURRENT_TIMESTAMP
+            WHERE id IN (SELECT product_id FROM order_items WHERE order_id = ?)
+            """,
+            (order_id, order_id),
+        )
+    connection.execute(
+        "UPDATE orders SET order_status = ? WHERE id = ?",
+        (new_status, order_id),
+    )
+    connection.commit()
+    flash(f"Order status changed to {new_status}.", "success")
+    return redirect(url_for("admin_orders"))
+
+
+@app.route("/admin/sales")
+@admin_required
+def admin_sales():
+    totals = get_db().execute(
+        """
+        SELECT COUNT(*) AS order_count,
+               COALESCE(SUM(total_amount), 0) AS sales_total,
+               COALESCE(AVG(total_amount), 0) AS average_order
+        FROM orders WHERE order_status != 'Cancelled'
+        """
+    ).fetchone()
+    monthly_sales = get_db().execute(
+        """
+        SELECT strftime('%Y-%m', created_at) AS month,
+               COUNT(*) AS order_count,
+               SUM(total_amount) AS sales_total
+        FROM orders
+        WHERE order_status != 'Cancelled'
+        GROUP BY strftime('%Y-%m', created_at)
+        ORDER BY month DESC LIMIT 6
+        """
+    ).fetchall()
+    popular_products = get_db().execute(
+        """
+        SELECT oi.product_name_at_purchase AS product_name,
+               SUM(oi.quantity) AS units_sold,
+               SUM(oi.subtotal) AS sales_total
+        FROM order_items oi
+        JOIN orders o ON o.id = oi.order_id
+        WHERE o.order_status != 'Cancelled'
+        GROUP BY oi.product_id, oi.product_name_at_purchase
+        ORDER BY units_sold DESC, sales_total DESC
+        LIMIT 8
+        """
+    ).fetchall()
+    return render_template(
+        "admin/sales.html",
+        admin=current_admin(),
+        totals=totals,
+        monthly_sales=monthly_sales,
+        popular_products=popular_products,
+    )
+
+
+@app.route("/admin/profile", methods=["GET", "POST"])
+@admin_required
+def admin_profile():
+    admin = current_admin()
+    if admin is None:
+        session.clear()
+        flash("Administrator account not found. Please sign in again.", "error")
+        return redirect(url_for("admin_login"))
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        phone = request.form.get("phone", "").strip()
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+        errors = []
+        if not 2 <= len(name) <= 100:
+            errors.append("Admin name must be between 2 and 100 characters.")
+        if not valid_admin_email(email):
+            errors.append("Please enter a valid email address.")
+        if not valid_admin_phone(phone):
+            errors.append("Enter a valid phone number with at least 7 digits.")
+        if new_password or confirm_password:
+            if not check_password_hash(admin["password_hash"], current_password):
+                errors.append("Enter your current password to change it.")
+            if len(new_password) < 8:
+                errors.append("New admin passwords must be at least 8 characters long.")
+            if new_password != confirm_password:
+                errors.append("New password and confirmation do not match.")
+        if errors:
+            for message in errors:
+                flash(message, "error")
+            return render_template("admin/profile.html", admin=admin)
+
+        duplicate = get_db().execute(
+            "SELECT 1 FROM admins WHERE email = ? AND id != ?",
+            (email, admin["id"]),
+        ).fetchone()
+        if duplicate:
+            flash("An administrator with this email already exists.", "error")
+            return render_template("admin/profile.html", admin=admin)
+        if new_password:
+            get_db().execute(
+                """
+                UPDATE admins SET full_name = ?, email = ?, phone_number = ?,
+                                  password_hash = ? WHERE id = ?
+                """,
+                (
+                    name,
+                    email,
+                    phone,
+                    generate_password_hash(new_password),
+                    admin["id"],
+                ),
+            )
+        else:
+            get_db().execute(
+                """
+                UPDATE admins SET full_name = ?, email = ?, phone_number = ?
+                WHERE id = ?
+                """,
+                (name, email, phone, admin["id"]),
+            )
+        get_db().commit()
+        flash("Admin profile updated.", "success")
+        return redirect(url_for("admin_profile"))
+    return render_template("admin/profile.html", admin=admin)
 
 
 if __name__ == "__main__":

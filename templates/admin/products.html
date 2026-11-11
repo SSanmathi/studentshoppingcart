@@ -1,0 +1,41 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manage Products | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div><span class="eyebrow">Catalogue</span><h1>Manage Products</h1><p>Edit prices, stock, product details, and visibility.</p></div>
+    <a class="primary-btn" href="{{ url_for('admin_add_product') }}"><i class="fa-solid fa-plus"></i> Add product</a>
+</section>
+<section class="panel admin-table-panel">
+    {% if products %}
+    <div class="admin-table-scroll">
+        <table class="admin-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Original price</th><th>Discount price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>{% for product in products %}
+                <tr>
+                    <td><div class="admin-product-cell"><img src="{{ product.image_url or product_image_fallback(product.category) }}" alt="" loading="lazy"><strong>{{ product.name }}</strong></div></td>
+                    <td>{{ product.category }}</td>
+                    <td>₹{{ '%.2f'|format(product.original_price or product.price) }}</td>
+                    <td>₹{{ '%.2f'|format(product.price) }}</td>
+                    <td>{{ product.stock }}</td>
+                    <td><span class="admin-status {% if product.is_active %}status-active{% else %}status-inactive{% endif %}">{{ 'Active' if product.is_active else 'Inactive' }}</span></td>
+                    <td class="admin-action-cell">
+                        <a class="secondary-btn small-btn" href="{{ url_for('admin_product_preview', product_id=product.id) }}">View</a>
+                        <a class="secondary-btn small-btn" href="{{ url_for('admin_edit_product', product_id=product.id) }}">Edit</a>
+                        <form method="POST" action="{{ url_for('admin_toggle_product_status', product_id=product.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="secondary-btn small-btn" type="submit">{{ 'Deactivate' if product.is_active else 'Activate' }}</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin_delete_product', product_id=product.id) }}" onsubmit="return confirm('Delete this product? Products with order history must be deactivated instead.');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="danger-btn small-btn" type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<div class="empty-state"><h2>No products yet</h2><p>Add a product to publish it to the student catalogue.</p><a class="primary-btn" href="{{ url_for('admin_add_product') }}">Add your first product</a></div>{% endif %}
+</section>
+{% endblock %}

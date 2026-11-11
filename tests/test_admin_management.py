@@ -472,6 +472,7 @@ class AdminManagementTests(unittest.TestCase):
             "/admin/add-product",
             "/admin/manage-products",
             "/admin/categories",
+            "/admin/students",
             f"/admin/products/{product_id}/edit",
             f"/admin/edit-product/{product_id}",
             "/admin/orders",
@@ -559,6 +560,19 @@ class AdminManagementTests(unittest.TestCase):
             self.assertIn("admin_id", session)
             self.assertNotIn("user_id", session)
 
+    def test_admin_can_review_registered_students_and_students_cannot_open_admin_page(self):
+        denied = self.client.get("/admin/students")
+        self.assertEqual(denied.status_code, 302)
+        self.assertIn("/admin/login", denied.location)
+
+        self.create_admin()
+        self.create_student()
+        response = self.client.get("/admin/students")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Manage Students", response.data)
+        self.assertIn(b"student@example.edu", response.data)
+        self.assertIn(b"Test College", response.data)
+
     def test_authenticated_admin_and_student_switch_views_without_losing_sessions(self):
         admin_id = self.create_admin()
         student_id = self.create_student()
@@ -577,6 +591,8 @@ class AdminManagementTests(unittest.TestCase):
         admin_dashboard = self.client.get("/admin/dashboard")
         self.assertEqual(admin_dashboard.status_code, 200)
         self.assertIn(b"Switch to Student View", admin_dashboard.data)
+        self.assertIn(b"Test Admin", admin_dashboard.data)
+        self.assertIn(b"Administrator</small>", admin_dashboard.data)
         added_product = self.client.post(
             "/admin/products/new",
             data={
@@ -619,6 +635,8 @@ class AdminManagementTests(unittest.TestCase):
         student_dashboard = self.client.get("/dashboard")
         self.assertEqual(student_dashboard.status_code, 200)
         self.assertIn(b"Switch to Admin View", student_dashboard.data)
+        self.assertIn(b"Test Student", student_dashboard.data)
+        self.assertIn(b"Student</small>", student_dashboard.data)
         self.assertIn(b"View Switch Product", student_dashboard.data)
         with self.client.session_transaction() as session:
             self.assertEqual(session["active_role"], "student")
@@ -669,6 +687,7 @@ class AdminManagementTests(unittest.TestCase):
         admin_page = self.client.get("/admin")
         self.assertEqual(admin_page.status_code, 200)
         self.assertIn(b"Switch to Student View", admin_page.data)
+        self.assertIn(b"Test Admin", admin_page.data)
         orders_page = self.client.get("/admin/orders")
         self.assertEqual(orders_page.status_code, 200)
         self.assertIn(b"Test Student", orders_page.data)
@@ -730,6 +749,57 @@ class AdminManagementTests(unittest.TestCase):
             self.assertEqual(session["user_id"], student_id)
             self.assertNotIn("admin_id", session)
 
+    def test_student_can_switch_to_admin_after_independent_admin_login(self):
+        admin_id = self.create_admin()
+        student_id = self.create_student()
+        with self.client.session_transaction() as session:
+            session.clear()
+            session["user_id"] = student_id
+            session["active_role"] = "student"
+            session["_csrf_token"] = "student-test-csrf"
+
+        response = self.client.post(
+            "/switch-view",
+            data={"csrf_token": "student-test-csrf", "target": "admin"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, "/admin/login")
+
+        login = self.client.post(
+            "/admin/login",
+            data={
+                "csrf_token": "student-test-csrf",
+                "email": "admin@example.edu",
+                "password": "secure-admin-password",
+            },
+        )
+        self.assertEqual(login.status_code, 302)
+        self.assertEqual(login.location, "/admin/dashboard")
+        dashboard = self.client.get(login.location)
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertIn(b"Test Admin", dashboard.data)
+        self.assertIn(b"Administrator</small>", dashboard.data)
+        admin_csrf = self.csrf_token()
+
+        with self.client.session_transaction() as session:
+            self.assertEqual(session["active_role"], "admin")
+            self.assertEqual(session["admin_id"], admin_id)
+            self.assertEqual(session["user_id"], student_id)
+
+        switched_back = self.client.post(
+            "/switch-view",
+            data={"csrf_token": admin_csrf, "target": "student"},
+        )
+        self.assertEqual(switched_back.status_code, 302)
+        self.assertEqual(switched_back.location, "/dashboard")
+        student_dashboard = self.client.get(switched_back.location)
+        self.assertEqual(student_dashboard.status_code, 200)
+        self.assertIn(b"Test Student", student_dashboard.data)
+        with self.client.session_transaction() as session:
+            self.assertEqual(session["active_role"], "student")
+            self.assertEqual(session["admin_id"], admin_id)
+            self.assertEqual(session["user_id"], student_id)
+
     def test_switching_to_student_view_preserves_admin_until_student_login(self):
         admin_id = self.create_admin()
         with self.client.session_transaction() as session:
@@ -742,10 +812,15 @@ class AdminManagementTests(unittest.TestCase):
             data={"csrf_token": "admin-test-csrf", "target": "student"},
         )
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, "/")
-        student_home = self.client.get(response.location)
-        self.assertEqual(student_home.status_code, 200)
-        self.assertIn(b"Student Cart helps students shop smarter", student_home.data)
+        self.assertEqual(response.location, "/login")
+        student_login = self.client.get(response.location)
+        self.assertEqual(student_login.status_code, 200)
+        self.assertIn(b"Sign in to continue", student_login.data)
+        self.assertIn(
+            b"Sign in to your student account to switch to Student View.",
+            student_login.data,
+        )
+        self.assertIn(b"Return to Admin Dashboard", student_login.data)
         with self.client.session_transaction() as session:
             self.assertEqual(session["active_role"], "student")
             self.assertEqual(session["admin_id"], admin_id)

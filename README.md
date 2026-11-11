@@ -31,11 +31,12 @@ Student Cart is a full-stack Flask application for college students to browse pr
 - Student Budget Challenge builds purpose-based catalogue baskets that remain within a chosen limit
 - Product comparison displays two or three real catalogue listings side by side
 - Separate administrator login with CLI-provisioned first account and admin-only account creation
-- Admin dashboard for product management, order status, profile, and demo sales summaries
+- Separate student and administrator entry points with role-aware navigation and session switching
+- Admin dashboard for product management, registered-student review, order status, profile, and demo sales summaries
 - Admin product uploads with type/size checks; active products publish immediately to the student catalogue
 
 ## Project structure
-- app.py – Flask routes and business logic
+- app.py – Flask setup, CSRF, role/session helpers, CLI commands, and route registration; student routes begin around line 743, cart/checkout/orders around 1017–1387, and administrator routes around 2047
 - pricing.py – validated, reusable product-offer and cart price calculations
 - student_tools.py – department/need recommendations, hostel checklist matching, budget baskets, and relevant alternatives
 - catalog.py – Python catalogue search, filtering, sorting, indexing, and de-duplication
@@ -44,7 +45,11 @@ Student Cart is a full-stack Flask application for college students to browse pr
 - seed.py – seed product dataset
 - templates/ – Jinja templates for all pages
 - static/css/style.css – app styling
+- static/css/admin.css – administrator dashboard styling
 - static/js/app.js – UI enhancements and toast handling
+- tests/ – isolated-database integration tests for login, role switching, catalog, cart, checkout, admin management, and pricing
+
+The route coordinator uses the separate database, catalog, pricing, and student-tools modules for focused data and domain logic. The student and administrator page templates are separated under `templates/` and `templates/admin/`.
 
 ## Setup
 1. Open a terminal in the project folder.
@@ -75,7 +80,9 @@ The password prompt is hidden. The reset command only updates an existing admini
 
 Start the website with `python app.py`, then sign in at **http://127.0.0.1:5000/admin/login**. After the first account exists, only a signed-in administrator can create additional accounts from **Admin Accounts** in the sidebar. Student accounts cannot register as administrators. Admin and student identities use separate database records and separate session keys. Role-protected routes check the active view and authenticated identity.
 
-Use the **Switch to Student View** and **Switch to Admin View** buttons in the navigation. View changes are POST requests protected by CSRF validation. If an admin is not signed in, switching to Admin View opens Admin Login. Student accounts cannot open admin routes. Logging out removes the active role's identity and keeps the other identity available when one is signed in. Admin passwords are hashed.
+Use the **Switch to Student View** and **Switch to Admin View** buttons in the navigation. View changes are POST requests protected by CSRF validation. Switching changes the active role only when that identity is authenticated; if the other role is not signed in yet, the app opens that role's login while preserving the existing identity. Student accounts cannot open admin routes. Logging out removes the active role's identity and keeps the other identity available when one is signed in. Admin passwords are hashed.
+
+Switching from the admin dashboard to the private student dashboard requires a signed-in student account. If no student is signed in yet, **Switch to Student View** opens Student Login and keeps the admin session available; after student sign-in, use **Switch to Admin View** to return.
 
 The admin dashboard includes product counts, recent products and orders, product add/edit/deactivate/delete, order status updates, demo sales summaries, and profile settings. Uploaded product images are limited to JPG, PNG, or WebP files up to 3 MB and are saved under the ignored `static/uploads/products/` directory. Active products appear automatically in the student catalogue; inactive products are hidden from student shopping and API routes. Products with order history cannot be deleted, preserving order records; deactivate those products instead. Cancelling an order restores its reserved stock once, and cancelled/completed orders are final.
 

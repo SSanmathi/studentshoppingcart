@@ -16,6 +16,7 @@
     <article class="admin-stat-card"><span>Total Products</span><strong>{{ stats.total_products }}</strong><i class="fa-solid fa-boxes-stacked"></i></article>
     <article class="admin-stat-card"><span>Active Products</span><strong>{{ stats.active_products }}</strong><i class="fa-solid fa-circle-check"></i></article>
     <article class="admin-stat-card"><span>Out of Stock</span><strong>{{ stats.out_of_stock_products }}</strong><i class="fa-solid fa-triangle-exclamation"></i></article>
+    <article class="admin-stat-card"><span>Registered Students</span><strong>{{ stats.total_students }}</strong><i class="fa-solid fa-user-graduate"></i></article>
     <article class="admin-stat-card"><span>Total Orders</span><strong>{{ order_stats.total_orders }}</strong><i class="fa-solid fa-receipt"></i></article>
     <article class="admin-stat-card"><span>Pending Orders</span><strong>{{ order_stats.pending_orders }}</strong><i class="fa-solid fa-clock"></i></article>
     <article class="admin-stat-card"><span>Completed Orders</span><strong>{{ order_stats.completed_orders }}</strong><i class="fa-solid fa-check-double"></i></article>
@@ -25,6 +26,7 @@
     <a class="admin-shortcut-card" href="{{ url_for('admin_add_product') }}"><i class="fa-solid fa-plus"></i><span><strong>Add Product</strong><small>Publish an item to the student catalogue</small></span></a>
     <a class="admin-shortcut-card" href="{{ url_for('admin_products') }}"><i class="fa-solid fa-boxes-stacked"></i><span><strong>Manage Products</strong><small>Update prices, stock, and visibility</small></span></a>
     <a class="admin-shortcut-card" href="{{ url_for('admin_categories') }}"><i class="fa-solid fa-tags"></i><span><strong>Categories</strong><small>Organize catalogue products</small></span></a>
+    <a class="admin-shortcut-card" href="{{ url_for('admin_students') }}"><i class="fa-solid fa-user-graduate"></i><span><strong>Manage Students</strong><small>Review registered student accounts</small></span></a>
     <a class="admin-shortcut-card" href="{{ url_for('admin_orders') }}"><i class="fa-solid fa-receipt"></i><span><strong>Manage Orders</strong><small>Review and update student orders</small></span></a>
 </section>
 

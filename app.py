@@ -121,6 +121,7 @@ def get_db():
     return g.db
 
 
+# Authentication and active-role helpers
 def active_role():
     selected_role = session.get("active_role")
     if selected_role in {"admin", "student"}:
@@ -148,7 +149,15 @@ def login_required(view):
     def wrapped(*args, **kwargs):
         if active_role() == "admin":
             return redirect(url_for("admin_dashboard"))
-        if "user_id" not in session:
+        user = get_user_by_id(session.get("user_id"))
+        if user is None:
+            session.pop("user_id", None)
+            admin = current_admin()
+            if admin is not None:
+                session["active_role"] = "admin"
+                flash("Your student account is unavailable. Returned to Admin View.", "error")
+                return redirect(url_for("admin_dashboard"))
+            session.clear()
             flash("Please log in to continue.", "error")
             return redirect(url_for("login"))
         return view(*args, **kwargs)
@@ -192,6 +201,7 @@ def get_product_by_id(product_id):
     ).fetchone()
 
 
+# Shared catalogue, cart, and student dashboard services
 def with_product_pricing(products, quantities=None, now=None):
     products = [dict(product) for product in products]
     if not products:
@@ -328,12 +338,26 @@ def get_recently_viewed_products(exclude_ids=()):
 @app.context_processor
 def navigation_context():
     user_id = session.get("user_id")
+    current_user = get_user_by_id(user_id) if user_id is not None else None
+    nav_categories = get_db().execute(
+        """
+        SELECT DISTINCT category
+        FROM products
+        WHERE is_active = 1 AND TRIM(category) != ''
+        ORDER BY category COLLATE NOCASE
+        """
+    ).fetchall()
+    common = {
+        "current_user": current_user,
+        "nav_categories": nav_categories,
+        "category_images": CATEGORY_IMAGES,
+    }
     if user_id is None:
         return {
+            **common,
             "cart_count": 0,
             "wishlist_count": 0,
             "wishlisted_product_ids": [],
-            "category_images": CATEGORY_IMAGES,
         }
     counts = get_db().execute(
         """
@@ -355,9 +379,9 @@ def navigation_context():
         ).fetchall()
     ]
     return {
+        **common,
         **dict(counts),
         "wishlisted_product_ids": wishlisted_product_ids,
-        "category_images": CATEGORY_IMAGES,
     }
 
 
@@ -706,6 +730,7 @@ def get_user_orders(user_id):
     ).fetchall()
 
 
+# Student entry points and shopping pages
 @app.route("/")
 def home():
     if active_role() == "admin":
@@ -1417,6 +1442,7 @@ def profile():
     return render_template("profile.html", user=get_user_by_id(session["user_id"]))
 
 
+# Public catalogue API and student planning tools
 @app.route("/api/products")
 def products_api():
     query = request.args.get("q", "").strip()
@@ -1800,6 +1826,7 @@ def current_admin():
     ).fetchone()
 
 
+# Administrator validation and product form services
 def get_admin_categories():
     rows = get_db().execute(
         "SELECT name FROM categories ORDER BY name COLLATE NOCASE"
@@ -2052,7 +2079,8 @@ def admin_dashboard():
         """
         SELECT COUNT(*) AS total_products,
                COALESCE(SUM(is_active = 1), 0) AS active_products,
-               COALESCE(SUM(is_active = 1 AND stock = 0), 0) AS out_of_stock_products
+               COALESCE(SUM(is_active = 1 AND stock = 0), 0) AS out_of_stock_products,
+               (SELECT COUNT(*) FROM users) AS total_students
         FROM products
         """
     ).fetchone()
@@ -2097,6 +2125,7 @@ def admin_dashboard():
     )
 
 
+# Administrator account, product, order, and report pages
 @app.route("/switch-view", methods=["POST"])
 @app.route("/switch-to-student", methods=["POST"])
 @app.route("/switch-to-admin", methods=["POST"])
@@ -2117,8 +2146,8 @@ def switch_view():
         session["active_role"] = "student"
         if "user_id" not in session or get_user_by_id(session["user_id"]) is None:
             session.pop("user_id", None)
-            flash("You are viewing the student website. Log in to use your cart and account.", "info")
-            return redirect(url_for("home"))
+            flash("Sign in to your student account to switch to Student View.", "info")
+            return redirect(url_for("login"))
         flash("Switched to Student View.", "success")
         return redirect(url_for("dashboard"))
 
@@ -2254,6 +2283,27 @@ def admin_products():
         "admin/products.html",
         admin=current_admin(),
         products=products_list,
+    )
+
+
+@app.route("/admin/students")
+@admin_required
+def admin_students():
+    students = get_db().execute(
+        """
+        SELECT u.id, u.full_name, u.email, u.college_name, u.department,
+               u.created_at, COUNT(DISTINCT o.id) AS order_count,
+               MAX(o.created_at) AS latest_order_at
+        FROM users u
+        LEFT JOIN orders o ON o.user_id = u.id
+        GROUP BY u.id
+        ORDER BY u.created_at DESC, u.id DESC
+        """
+    ).fetchall()
+    return render_template(
+        "admin/students.html",
+        admin=current_admin(),
+        students=students,
     )
 
 

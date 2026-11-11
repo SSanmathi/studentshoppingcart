@@ -223,6 +223,7 @@ class BackendIntegrationTests(unittest.TestCase):
             """,
             ("Other Student", "other.student@example.edu", "unused", "Other College"),
         ).lastrowid
+        connection.commit()
         connection.close()
         other_client = student_cart.app.test_client()
         with other_client.session_transaction() as session:
@@ -281,11 +282,15 @@ class BackendIntegrationTests(unittest.TestCase):
             b"Home",
             b"Products",
             b"Categories",
-            b"Kit Planner",
             b"Cart",
-            b"Create account",
-            b"Log in",
+            b"Student Signup",
+            b"Student Login",
             b"Admin Login",
+            b"Student portal",
+            b"Admin portal",
+            b"Books",
+            b"Stationery",
+            b"Hostel Essentials",
         ):
             self.assertIn(label, response.data)
         for label in (b"Default student budget", b"Personalize it anytime", b"Plan your shopping", b"Budget planner"):
@@ -307,6 +312,45 @@ class BackendIntegrationTests(unittest.TestCase):
         self.assertIn(b"Admin Email", admin_login.data)
         self.assertIn(b"Login as Admin", admin_login.data)
         self.assertNotIn(b"Create an admin account", admin_login.data)
+
+    def test_student_navigation_links_to_student_pages_and_protects_admin_switch(self):
+        connection = sqlite3.connect(self.database_path)
+        student_id = connection.execute(
+            """
+            INSERT INTO users (full_name, email, password_hash, college_name)
+            VALUES (?, ?, ?, ?)
+            """,
+            ("Navigation Student", "navigation@example.edu", "unused-test-hash", "Test College"),
+        ).lastrowid
+        connection.commit()
+        connection.close()
+        with self.client.session_transaction() as session:
+            session["user_id"] = student_id
+            session["active_role"] = "student"
+
+        response = self.client.get("/products")
+        self.assertEqual(response.status_code, 200)
+        for label in (
+            b"All Products",
+            b"Stationery",
+            b"Books",
+            b"Hostel Essentials",
+            b"My Orders",
+            b"My Profile",
+            b"Cart",
+            b"Navigation Student",
+            b"Student</small>",
+        ):
+            self.assertIn(label, response.data)
+        self.assertIn(b"Admin Login", response.data)
+        self.assertIn(b"Switch to Admin View", response.data)
+        self.assertEqual(
+            self.client.post(
+                "/switch-view",
+                data={"csrf_token": self.csrf_from(response), "target": "admin"},
+            ).location,
+            "/admin/login",
+        )
 
     def test_product_listing_has_one_empty_state_and_accessible_filters(self):
         connection = sqlite3.connect(self.database_path)

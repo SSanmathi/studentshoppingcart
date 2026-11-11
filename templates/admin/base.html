@@ -27,12 +27,19 @@
         </a>
         {% if admin %}
             <div class="admin-top-actions">
-                <span>{{ admin.full_name }}</span>
+                <span class="nav-account" aria-label="Signed in as {{ admin.full_name }}">
+                    <i class="fa-solid fa-user-shield" aria-hidden="true"></i>
+                    <span>{{ admin.full_name }}</span>
+                    <small>Administrator</small>
+                </span>
                 <form method="POST" action="{{ url_for('switch_view') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="target" value="student">
                     <button class="view-switch-btn" type="submit"><i class="fa-solid fa-store" aria-hidden="true"></i> Switch to Student View</button>
                 </form>
+                {% if not session.get('user_id') %}
+                    <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Student Login</a>
+                {% endif %}
             </div>
         {% else %}
             <div class="admin-top-actions">
@@ -49,6 +56,7 @@
                 <a href="{{ url_for('admin_add_product') }}" {% if request.endpoint == 'admin_add_product' %}aria-current="page"{% endif %}><i class="fa-solid fa-plus"></i> Add Product</a>
                 <a href="{{ url_for('admin_products') }}" {% if request.endpoint in ('admin_products', 'admin_edit_product') %}aria-current="page"{% endif %}><i class="fa-solid fa-boxes-stacked"></i> Manage Products</a>
                 <a href="{{ url_for('admin_categories') }}" {% if request.endpoint == 'admin_categories' %}aria-current="page"{% endif %}><i class="fa-solid fa-tags"></i> Categories</a>
+                <a href="{{ url_for('admin_students') }}" {% if request.endpoint == 'admin_students' %}aria-current="page"{% endif %}><i class="fa-solid fa-user-graduate"></i> Manage Students</a>
                 <a href="{{ url_for('admin_orders') }}" {% if request.endpoint in ('admin_orders', 'admin_update_order_status') %}aria-current="page"{% endif %}><i class="fa-solid fa-receipt"></i> Manage Orders</a>
                 <a href="{{ url_for('admin_sales') }}" {% if request.endpoint == 'admin_sales' %}aria-current="page"{% endif %}><i class="fa-solid fa-chart-line"></i> Sales Overview</a>
                 <a href="{{ url_for('admin_profile') }}" {% if request.endpoint == 'admin_profile' %}aria-current="page"{% endif %}><i class="fa-solid fa-user-gear"></i> My Profile</a>

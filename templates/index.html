@@ -9,10 +9,27 @@
         <h1>Student Cart helps students shop smarter every semester.</h1>
         <p>Find affordable academic essentials, organize your projects, and stay on budget with a cart that tracks every purchase.</p>
         <div class="hero-actions">
-            <a href="{{ url_for('register') }}" class="primary-btn">Create account</a>
-            <a href="{{ url_for('login') }}" class="secondary-btn">Log in</a>
+            <a href="{{ url_for('register') }}" class="primary-btn">Student Signup</a>
+            <a href="{{ url_for('login') }}" class="secondary-btn">Student Login</a>
         </div>
     </div>
+</section>
+
+<section class="role-entry-grid" aria-label="Choose your Student Cart portal">
+    <a class="role-entry-card student-entry" href="{{ url_for('login') }}">
+        <span class="role-entry-icon"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></span>
+        <span class="eyebrow">Student portal</span>
+        <strong>Shop, plan, and track orders</strong>
+        <span>Sign in to browse the catalogue, manage your cart, and view your purchases.</span>
+        <span class="role-entry-link">Student Login <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+    </a>
+    <a class="role-entry-card admin-entry" href="{{ url_for('admin_login') }}">
+        <span class="role-entry-icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
+        <span class="eyebrow">Admin portal</span>
+        <strong>Manage the Student Cart store</strong>
+        <span>Sign in to maintain products, review orders, and see sales reports.</span>
+        <span class="role-entry-link">Admin Login <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+    </a>
 </section>
 
 {% include 'partials/category_cards.html' %}

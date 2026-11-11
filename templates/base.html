@@ -27,21 +27,30 @@
         </div>
         <div class="nav-links">
             <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}" {% if request.endpoint in ('home', 'dashboard') %}aria-current="page"{% endif %}>Home</a>
-            <a href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}#categories">Categories</a>
+            <a href="{{ url_for('products') }}">All Products</a>
+            <details class="nav-tools">
+                <summary>Categories <i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
+                <div class="nav-tools-menu" aria-label="Product categories">
+                    {% for category in nav_categories %}
+                        <a href="{{ url_for('products', category=category.category) }}">{{ category.category }}</a>
+                    {% else %}
+                        <span class="muted-note">No active product categories</span>
+                    {% endfor %}
+                </div>
+            </details>
             {% if session.get('user_id') %}
-                <a href="{{ url_for('products') }}" {% if request.endpoint in ('products', 'product_detail') %}aria-current="page"{% endif %}>Search Products</a>
-                <a href="{{ url_for('dashboard') }}#latest-products">Latest</a>
-                <a href="{{ url_for('dashboard') }}#special-offers">Special Offers</a>
-                <a href="{{ url_for('profile') }}" {% if request.endpoint == 'profile' %}aria-current="page"{% endif %}>Student Profile</a>
-            {% else %}
-                <a href="{{ url_for('products') }}" {% if request.endpoint in ('products', 'product_detail') %}aria-current="page"{% endif %}>Search Products</a>
+                <a href="{{ url_for('orders') }}" {% if request.endpoint == 'orders' %}aria-current="page"{% endif %}>My Orders</a>
+                <a href="{{ url_for('profile') }}" {% if request.endpoint == 'profile' %}aria-current="page"{% endif %}>My Profile</a>
             {% endif %}
-            <a href="{{ url_for('kit_planner') }}" {% if request.endpoint == 'kit_planner' %}aria-current="page"{% endif %}>Kit Planner</a>
             <a class="cart-pill" href="{{ url_for('cart') }}" {% if request.endpoint in ('cart', 'checkout') %}aria-current="page"{% endif %}><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i> Cart <span>{{ cart_count }}</span></a>
         </div>
         <div class="nav-actions">
-            <a class="admin-login-link" href="{{ url_for('admin_login') }}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Admin Login</a>
             {% if session.get('user_id') %}
+                <span class="nav-account" aria-label="Signed in as {{ current_user.full_name if current_user else 'student' }}">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i>
+                    <span>{{ current_user.full_name if current_user else 'Student' }}</span>
+                    <small>Student</small>
+                </span>
                 <form method="POST" action="{{ url_for('switch_view') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="target" value="admin">
@@ -56,11 +65,14 @@
                     <form method="POST" action="{{ url_for('switch_view') }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="target" value="admin">
-                        <button class="view-switch-btn" type="submit"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Switch to Admin View</button>
+                        <button class="view-switch-btn" type="submit"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Return to Admin Dashboard</button>
                     </form>
+                    <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Student Login</a>
+                {% else %}
+                    <a class="primary-btn small-btn" href="{{ url_for('login') }}">Student Login</a>
+                    <a class="admin-login-link" href="{{ url_for('admin_login') }}"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Admin Login</a>
+                    <a class="secondary-btn small-btn" href="{{ url_for('register') }}">Create account</a>
                 {% endif %}
-                <a class="primary-btn small-btn" href="{{ url_for('register') }}">Create account</a>
-                <a class="secondary-btn small-btn" href="{{ url_for('login') }}">Log in</a>
             {% endif %}
         </div>
     </nav>
@@ -81,9 +93,7 @@
                     <strong>STUDENT</strong>
                     <a href="{{ url_for('login') }}">Student Login</a>
                     <a href="{{ url_for('register') }}">Student Signup</a>
-                    {% if session.get('user_id') %}
-                        <a href="{{ url_for('orders') }}">My Orders</a>
-                    {% endif %}
+                    <a href="{{ url_for('products') }}">All Products</a>
                 </div>
                 <div class="footer-role-links">
                     <strong>ADMIN</strong>

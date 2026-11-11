@@ -1,0 +1,53 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Manage Students | Student Cart{% endblock %}
+
+{% block content %}
+<section class="admin-page-heading">
+    <div>
+        <span class="eyebrow">Student accounts</span>
+        <h1>Manage Students</h1>
+        <p>Review registered students and their order activity.</p>
+    </div>
+</section>
+
+<section class="panel admin-table-panel">
+    {% if students %}
+    <div class="admin-table-scroll">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>College / School</th>
+                    <th>Department</th>
+                    <th>Orders</th>
+                    <th>Registered</th>
+                    <th>Latest order</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        <strong>{{ student.full_name }}</strong>
+                        <small class="table-subtext">{{ student.email }}</small>
+                    </td>
+                    <td>{{ student.college_name }}</td>
+                    <td>{{ student.department or '—' }}</td>
+                    <td>{{ student.order_count }}</td>
+                    <td>{{ student.created_at }}</td>
+                    <td>{{ student.latest_order_at or 'No orders' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+        <h2>No students registered</h2>
+        <p>New student accounts will appear here after registration.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
